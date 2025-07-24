@@ -1,0 +1,122 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Control de Gastos Fijos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f0f4f7;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border-bottom: 1px solid #ccc;
+    }
+
+    th {
+      background: #00796b;
+      color: white;
+    }
+
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+
+    .totales {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+
+    .resumen {
+      margin-top: 10px;
+    }
+
+    .positivo { color: green; }
+    .negativo { color: red; }
+  </style>
+</head>
+<body>
+
+<h1>Control de Gastos Fijos</h1>
+
+<table id="tablaGastos">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Concepto</th>
+      <th>Ingreso ($)</th>
+      <th>Egreso ($)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Se generan 20 filas automáticamente -->
+  </tbody>
+</table>
+
+<div class="totales">
+  Ingresos totales: $<span id="totalIngresos">0</span><br>
+  Egresos totales: $<span id="totalEgresos">0</span><br>
+  <div class="resumen">
+    Balance: <span id="balance" class="positivo">$0</span>
+  </div>
+</div>
+
+<script>
+  const tbody = document.querySelector("#tablaGastos tbody");
+  for (let i = 1; i <= 20; i++) {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${i}</td>
+      <td><input type="text" placeholder="Ej. Luz, Agua, etc."></td>
+      <td><input type="number" value="0" min="0" step="any" onchange="calcularTotales()"></td>
+      <td><input type="number" value="0" min="0" step="any" onchange="calcularTotales()"></td>
+    `;
+    tbody.appendChild(row);
+  }
+
+  function calcularTotales() {
+    let totalIngresos = 0;
+    let totalEgresos = 0;
+    const filas = document.querySelectorAll("#tablaGastos tbody tr");
+    filas.forEach(fila => {
+      const ingreso = parseFloat(fila.cells[2].querySelector("input").value) || 0;
+      const egreso = parseFloat(fila.cells[3].querySelector("input").value) || 0;
+      totalIngresos += ingreso;
+      totalEgresos += egreso;
+    });
+
+    document.getElementById("totalIngresos").textContent = totalIngresos.toFixed(2);
+    document.getElementById("totalEgresos").textContent = totalEgresos.toFixed(2);
+
+    const balance = totalIngresos - totalEgresos;
+    const balanceSpan = document.getElementById("balance");
+    balanceSpan.textContent = `$${balance.toFixed(2)}`;
+    balanceSpan.className = balance >= 0 ? "positivo" : "negativo";
+  }
+
+  // Cálculo inicial
+  calcularTotales();
+</script>
+
+</body>
+</html>
