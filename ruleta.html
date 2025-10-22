@@ -1,0 +1,180 @@
+﻿<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ruleta estilo Casino con Resultado</title>
+<style>
+  :root{
+    --size:360px;
+    --bg:#1a1a1a;
+    --fg:#fafafa;
+    --red:#ef4444;
+    --black:#111;
+    --green:#22c55e;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--fg);display:flex;align-items:center;justify-content:center;padding:24px}
+  .card{width:100%;max-width:980px;background:linear-gradient(180deg,#1f1f1f,#141414);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.6);padding:20px;display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start}
+
+  .result-display{grid-column:1/-1;text-align:center;margin-bottom:10px;font-size:1.8rem;font-weight:700;color:#fff;}
+  .result-display span{padding:6px 14px;border-radius:8px;display:inline-block;}
+
+  .left{display:flex;flex-direction:column;gap:12px;align-items:center}
+  .wheel-wrap{width:var(--size);height:var(--size);display:flex;align-items:center;justify-content:center;position:relative}
+  svg.ruleta{width:100%;height:100%;display:block;border-radius:50%}
+  .pointer{position:absolute;top:-12px;width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-bottom:20px solid var(--fg);z-index:2}
+
+  .controls{display:flex;gap:10px;align-items:center;margin-top:12px}
+  button{padding:10px 14px;border-radius:10px;border:0;background:var(--fg);color:var(--bg);font-weight:700;cursor:pointer;transition:transform .2s}
+  button:hover{transform:scale(1.05)}
+  .secondary{background:transparent;border:1px solid rgba(250,250,250,.1);color:var(--fg);font-weight:600}
+
+  .right{display:flex;flex-direction:column;gap:12px}
+  .history{min-height:60px;max-height:200px;overflow:auto;padding:8px;border-radius:8px;background:rgba(255,255,255,0.05);font-size:.95rem}
+  .history div{padding:6px 8px;border-bottom:1px dashed rgba(255,255,255,.1)}
+  .chart{background:#111;border-radius:8px;padding:10px;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+  canvas{display:block;width:100%;height:160px}
+</style>
+</head>
+<body>
+<div class="card" role="application" aria-label="Ruleta estilo Casino">
+  <div class="result-display" id="winner">Número ganador: <span id="winnerSpan">—</span></div>
+
+  <div class="left">
+    <div class="pointer"></div>
+    <div class="wheel-wrap">
+      <svg class="ruleta" viewBox="0 0 360 360" role="img" aria-label="Ruleta">
+        <g id="wheel" transform="translate(180,180)"></g>
+        <circle cx="180" cy="180" r="36" fill="#111" stroke="#fafafa" stroke-width="3" />
+      </svg>
+    </div>
+    <div class="controls">
+      <button id="spin">Girar</button>
+      <button id="clear" class="secondary">Borrar historial</button>
+    </div>
+  </div>
+
+  <div class="right">
+    <div>
+      <div style="font-weight:700;margin-bottom:6px">Historial</div>
+      <div id="history" class="history">—</div>
+    </div>
+    <div>
+      <div style="font-weight:700;margin-bottom:6px">Distribución de premios</div>
+      <div class="chart"><canvas id="chart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const sectors = [];
+for(let i=0;i<=36;i++){
+  let color = (i===0)?'var(--green)':((i%2===0)?'var(--black)':'var(--red)');
+  sectors.push({label:i.toString(), color});
+}
+
+const wheelG = document.querySelector('#wheel');
+const spinBtn = document.getElementById('spin');
+const clearBtn = document.getElementById('clear');
+const historyEl = document.getElementById('history');
+const canvas = document.getElementById('chart');
+const ctx = canvas.getContext('2d');
+const winnerSpan = document.getElementById('winnerSpan');
+let rotation = 0;
+let counts = Array(sectors.length).fill(0);
+let history = [];
+
+function drawWheel(){
+  wheelG.innerHTML = '';
+  const radius = 160;
+  for(let i=0;i<sectors.length;i++){
+    const start = (i/sectors.length)*2*Math.PI - Math.PI/2;
+    const end = ((i+1)/sectors.length)*2*Math.PI - Math.PI/2;
+    const large = end-start>Math.PI?1:0;
+    const x1 = Math.cos(start)*radius;
+    const y1 = Math.sin(start)*radius;
+    const x2 = Math.cos(end)*radius;
+    const y2 = Math.sin(end)*radius;
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',`M0,0 L${x1},${y1} A${radius},${radius} 0 ${large} 1 ${x2},${y2} Z`);
+    path.setAttribute('fill',sectors[i].color);
+    path.setAttribute('stroke','#fafafa');
+    path.setAttribute('stroke-width','0.5');
+    wheelG.appendChild(path);
+
+    const mid = (start+end)/2;
+    const tx = Math.cos(mid)*(radius*0.7);
+    const ty = Math.sin(mid)*(radius*0.7)+4;
+    const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('x',tx);
+    text.setAttribute('y',ty);
+    text.setAttribute('fill','#fafafa');
+    text.setAttribute('font-size','10');
+    text.setAttribute('text-anchor','middle');
+    text.setAttribute('font-weight','700');
+    text.textContent = sectors[i].label;
+    wheelG.appendChild(text);
+  }
+}
+
+function drawChart(){
+  const w = canvas.width = canvas.clientWidth*devicePixelRatio;
+  const h = canvas.height = canvas.clientHeight*devicePixelRatio;
+  ctx.clearRect(0,0,w,h);
+  const padding = 12*devicePixelRatio;
+  const barW = (w-padding*2)/sectors.length;
+  const max = Math.max(1,...counts);
+  for(let i=0;i<sectors.length;i++){
+    const barH = (counts[i]/max)*(h-padding*2);
+    ctx.fillStyle = sectors[i].color;
+    ctx.fillRect(padding + i*barW, h-padding-barH, barW*0.8, barH);
+  }
+}
+
+function spin(){
+  spinBtn.disabled=true;
+  const extra = Math.random()*360;
+  const turns = 6 + Math.floor(Math.random()*6);
+  const target = rotation + turns*360 + extra;
+  wheelG.style.transition = 'transform 5s cubic-bezier(.18,.91,.2,1)';
+  wheelG.style.transform = `rotate(${target}deg)`;
+  wheelG.addEventListener('transitionend',()=>{
+    rotation = target%360;
+    const angle = (360-rotation+90)%360;
+    const sectorIndex = Math.floor(angle/(360/sectors.length))%sectors.length;
+    counts[sectorIndex]++;
+    history.unshift({time:new Date(), label:sectors[sectorIndex].label});
+    if(history.length>8) history.pop();
+    updateHistory();
+    drawChart();
+    winnerSpan.textContent = `${sectors[sectorIndex].label} (${getColorName(sectors[sectorIndex].color)})`;
+    spinBtn.disabled=false;
+  },{once:true});
+}
+
+function getColorName(color){
+  if(color==='var(--green)') return 'verde';
+  if(color==='var(--red)') return 'rojo';
+  if(color==='var(--black)') return 'negro';
+  return '';
+}
+
+function updateHistory(){
+  if(history.length===0){historyEl.textContent='—';return;}
+  historyEl.innerHTML='';
+  history.forEach(h=>{
+    const d=document.createElement('div');
+    d.textContent=`${h.time.toLocaleTimeString()} — ${h.label}`;
+    historyEl.appendChild(d);
+  });
+}
+
+drawWheel();
+drawChart();
+spinBtn.addEventListener('click',spin);
+clearBtn.addEventListener('click',()=>{counts=Array(sectors.length).fill(0);history=[];updateHistory();drawChart();winnerSpan.textContent='—';});
+window.addEventListener('resize',drawChart);
+</script>
+</body>
+</html>
