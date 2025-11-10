@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diana de Dardos - Móvil</title>
+<style>
+  body {
+    background: #222;
+    color: white;
+    text-align: center;
+    font-family: Arial, sans-serif;
+  }
+  canvas {
+    background: #0a0a0a;
+    border-radius: 50%;
+    margin-top: 20px;
+    cursor: crosshair;
+  }
+  #marcador {
+    margin-top: 10px;
+    font-size: 1.2em;
+  }
+  #ganador {
+    margin-top: 20px;
+    font-size: 1.4em;
+    color: gold;
+  }
+</style>
+</head>
+<body>
+  <h1>🎯 Juego de Dardos con Diana en Movimiento</h1>
+  <canvas id="diana" width="400" height="400"></canvas>
+  <div id="marcador"></div>
+  <div id="ganador"></div>
+
+<script>
+const canvas = document.getElementById("diana");
+const ctx = canvas.getContext("2d");
+const marcador = document.getElementById("marcador");
+const ganadorDiv = document.getElementById("ganador");
+let centro = { x: 200, y: 200 };
+
+// ======= Movimiento de la diana =======
+let offset = 0;
+let direccion = 1;
+let velocidad = 0.8; // más bajo = más lento el movimiento
+
+function actualizarPosicionDiana() {
+  offset += direccion * velocidad;
+  if (offset > 40 || offset < -40) direccion *= -1; // límites de movimiento
+  centro.x = 200 + offset;
+}
+
+// ======= Dibujar Diana =======
+function dibujarDiana() {
+  const colores = ["red", "white", "green", "white", "black"];
+  const radios = [200, 160, 120, 80, 40];
+  for (let i = 0; i < radios.length; i++) {
+    ctx.beginPath();
+    ctx.arc(centro.x, centro.y, radios[i], 0, Math.PI * 2);
+    ctx.fillStyle = colores[i];
+    ctx.fill();
+  }
+}
+
+// ======= Calcular Puntos =======
+function obtenerPuntos(x, y) {
+  const dx = x - centro.x;
+  const dy = y - centro.y;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  if (dist <= 40) return 50;
+  else if (dist <= 80) return 25;
+  else if (dist <= 120) return 10;
+  else if (dist <= 160) return 5;
+  else if (dist <= 200) return 1;
+  else return 0;
+}
+
+// ======= Variables de Juego =======
+let jugadores = [
+  { nombre: "Jugador 1", puntuacion: 0, rondasGanadas: 0 },
+  { nombre: "Jugador 2", puntuacion: 0, rondasGanadas: 0 },
+  { nombre: "Jugador 3", puntuacion: 0, rondasGanadas: 0 }
+];
+let turnoJugador = 0;
+let tirosRestantes = 3;
+let rondasJugadas = 0;
+let enAnimacion = false;
+
+let impactos = []; // para mantener los tiros en pantalla
+
+function actualizarMarcador() {
+  marcador.innerHTML = jugadores.map(j => 
+    `${j.nombre}: ${j.puntuacion} pts (${j.rondasGanadas} rondas)`
+  ).join(" | ") + `<br>Turno: ${jugadores[turnoJugador].nombre} - Tiros restantes: ${tirosRestantes}`;
+}
+
+// ======= Animar Tiro =======
+function animarTiro(xDestino, yDestino, callback) {
+  enAnimacion = true;
+  const startX = Math.random() * 400;
+  const startY = 400;
+  let progreso = 0;
+  const duracion = 30; // frames
+
+  function frame() {
+    progreso++;
+    const t = progreso / duracion;
+    const x = startX + (xDestino - startX) * t;
+    const y = startY + (yDestino - startY) * t;
+
+    // Redibujar escena
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    actualizarPosicionDiana();
+    dibujarDiana();
+
+    // Dibuja impactos previos
+    impactos.forEach(i => {
+      ctx.beginPath();
+      ctx.arc(i.x, i.y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = "yellow";
+      ctx.fill();
+    });
+
+    // Dibuja el dardo en vuelo
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = "orange";
+    ctx.fill();
+
+    if (progreso < duracion) {
+      requestAnimationFrame(frame);
+    } else {
+      enAnimacion = false;
+      callback(xDestino, yDestino);
+    }
+  }
+
+  frame();
+}
+
+// ======= Dibujar bucle principal =======
+function animarDiana() {
+  if (!enAnimacion) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    actualizarPosicionDiana();
+    dibujarDiana();
+
+    // Redibujar impactos
+    impactos.forEach(i => {
+      ctx.beginPath();
+      ctx.arc(i.x, i.y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = "yellow";
+      ctx.fill();
+    });
+  }
+  requestAnimationFrame(animarDiana);
+}
+animarDiana();
+actualizarMarcador();
+
+// ======= Lógica de Tiro =======
+canvas.addEventListener("click", (e) => {
+  if (enAnimacion || ganadorDiv.innerText) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  animarTiro(x, y, (xFinal, yFinal) => {
+    const puntos = obtenerPuntos(xFinal, yFinal);
+    jugadores[turnoJugador].puntuacion += puntos;
+
+    // Guardar impacto
+    impactos.push({ x: xFinal, y: yFinal });
+
+    tirosRestantes--;
+
+    if (tirosRestantes === 0) {
+      turnoJugador++;
+      tirosRestantes = 3;
+
+      if (turnoJugador >= jugadores.length) {
+        // Fin de la ronda
+        turnoJugador = 0;
+        rondasJugadas++;
+
+        // Determinar ganador de ronda
+        const maxPunt = Math.max(...jugadores.map(j => j.puntuacion));
+        const ganadores = jugadores.filter(j => j.puntuacion === maxPunt);
+        if (ganadores.length === 1) {
+          ganadores[0].rondasGanadas++;
+          alert(`🏆 ${ganadores[0].nombre} gana la ronda ${rondasJugadas}!`);
+        } else {
+          alert("Empate en la ronda!");
+        }
+
+        // Reset puntuación e impactos
+        jugadores.forEach(j => j.puntuacion = 0);
+        impactos = [];
+
+        // Verificar si alguien ganó 3 rondas
+        const ganadorFinal = jugadores.find(j => j.rondasGanadas === 3);
+        if (ganadorFinal) {
+          ganadorDiv.innerText = `🎉 ${ganadorFinal.nombre} gana la partida al mejor de 5!`;
+        }
+      }
+    }
+
+    actualizarMarcador();
+  });
+});
+</script>
+</body>
+</html>
