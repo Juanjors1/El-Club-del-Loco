@@ -1,180 +1,208 @@
-ï»¿<!doctype html>
+<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Ruleta estilo Casino con Resultado</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Ruleta Loco</title>
 <style>
-  :root{
-    --size:360px;
-    --bg:#1a1a1a;
-    --fg:#fafafa;
-    --red:#ef4444;
-    --black:#111;
-    --green:#22c55e;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;min-height:100vh;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--fg);display:flex;align-items:center;justify-content:center;padding:24px}
-  .card{width:100%;max-width:980px;background:linear-gradient(180deg,#1f1f1f,#141414);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.6);padding:20px;display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start}
-
-  .result-display{grid-column:1/-1;text-align:center;margin-bottom:10px;font-size:1.8rem;font-weight:700;color:#fff;}
-  .result-display span{padding:6px 14px;border-radius:8px;display:inline-block;}
-
-  .left{display:flex;flex-direction:column;gap:12px;align-items:center}
-  .wheel-wrap{width:var(--size);height:var(--size);display:flex;align-items:center;justify-content:center;position:relative}
-  svg.ruleta{width:100%;height:100%;display:block;border-radius:50%}
-  .pointer{position:absolute;top:-12px;width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-bottom:20px solid var(--fg);z-index:2}
-
-  .controls{display:flex;gap:10px;align-items:center;margin-top:12px}
-  button{padding:10px 14px;border-radius:10px;border:0;background:var(--fg);color:var(--bg);font-weight:700;cursor:pointer;transition:transform .2s}
-  button:hover{transform:scale(1.05)}
-  .secondary{background:transparent;border:1px solid rgba(250,250,250,.1);color:var(--fg);font-weight:600}
-
-  .right{display:flex;flex-direction:column;gap:12px}
-  .history{min-height:60px;max-height:200px;overflow:auto;padding:8px;border-radius:8px;background:rgba(255,255,255,0.05);font-size:.95rem}
-  .history div{padding:6px 8px;border-bottom:1px dashed rgba(255,255,255,.1)}
-  .chart{background:#111;border-radius:8px;padding:10px;box-shadow:0 6px 20px rgba(0,0,0,.4)}
-  canvas{display:block;width:100%;height:160px}
+:root{
+  --verde-mesa:#032917;
+  --gold:#f5c042;
+  --accent:#ff2d55;
+  --card: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  --glass: rgba(255,255,255,0.03);
+  --text:#f3f4f3;
+  --red:#b2182b; --black:#0b0b0b; --green:#0f6b3a;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--verde-mesa);color:var(--text);-webkit-font-smoothing:antialiased}
+.app{min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:12px;padding:18px}
+.header{width:100%;max-width:1200px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.title{font-size:36px;font-weight:900;color:var(--gold);text-shadow:0 6px 18px rgba(245,192,66,0.12), 0 2px 8px rgba(0,0,0,0.6);letter-spacing:2px}
+.subtitle{font-size:13px;color:rgba(255,255,255,0.75)}
+.layout{width:100%;max-width:1200px;display:flex;gap:18px;align-items:flex-start}
+/* Left column: wheel + controls + table */
+.left{flex:1;display:flex;flex-direction:column;gap:12px;align-items:center}
+.card{width:100%;background:var(--card);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 10px 30px rgba(0,0,0,0.45)}
+.wheel-stage{position:relative;border-radius:16px;display:flex;align-items:center;justify-content:center;padding:14px;background:radial-gradient(circle at 30% 20%, rgba(255,255,255,0.03), transparent)}
+/* sizes responsive */
+#wheel-svg{width:420px;height:420px;transform-origin:50% 50%;transition:transform 3.8s cubic-bezier(.08,.88,.18,1)}
+.ball{position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid rgba(0,0,0,0.5);box-shadow:0 8px 18px rgba(0,0,0,0.6);top:32px;left:50%;transform:translateX(-50%);transition:transform 3.8s cubic-bezier(.14,.84,.22,1)}
+.pointer{position:absolute;top:6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-bottom:28px solid var(--gold);filter:drop-shadow(0 6px 12px rgba(0,0,0,0.6))}
+.center-cap{position:absolute;width:110px;height:110px;border-radius:50%;background:linear-gradient(180deg,#111,#222);display:flex;align-items:center;justify-content:center;border:6px solid rgba(255,255,255,0.02);font-weight:800;color:var(--gold)}
+.controls{display:flex;gap:10px;align-items:center;margin-top:8px}
+.btn{background:linear-gradient(180deg,var(--gold),#d09a1c);border:none;padding:10px 16px;border-radius:10px;font-weight:800;cursor:pointer}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text)}
+/* betting table */
+.table-wrap{width:100%;margin-top:8px;padding:12px;border-radius:10px;background:rgba(0,0,0,0.12);display:flex;flex-direction:column;gap:10px}
+.table-title{font-weight:800}
+.table-specials{display:flex;gap:8px;flex-wrap:wrap}
+.special{flex:1;padding:8px;border-radius:8px;text-align:center;background:rgba(0,0,0,0.2);font-weight:700}
+.table-grid-wrap{display:flex;gap:12px;align-items:flex-start}
+.zero-box{min-width:72px;display:flex;align-items:center;justify-content:center}
+.table-grid{display:grid;grid-template-columns:repeat(3,72px);gap:6px}
+.table-number{width:72px;height:46px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;background:rgba(0,0,0,0.35);border:2px solid rgba(255,255,255,0.03);position:relative}
+.table-number.red{background:linear-gradient(180deg,var(--red),#8a1119)}
+.table-number.black{background:linear-gradient(180deg,#111,#0b0b0b)}
+.table-number.green{background:linear-gradient(180deg,var(--green),#0b5d33)}
+.coin{position:fixed;width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 30% 30%, #fff9c4, #f5c042);border:2px solid rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-weight:800;box-shadow:0 8px 30px rgba(0,0,0,0.6);transform:translate(-50%,-50%) scale(0);transition:transform 0.45s cubic-bezier(.16,.84,.18,1);z-index:60}
+.coin.show{transform:translate(-50%,-50%) scale(1)}
+/* Right column: history */
+.right{width:320px;display:flex;flex-direction:column;gap:12px}
+.hist-card{padding:12px;border-radius:12px;background:var(--card)}
+.hist-list{display:flex;flex-direction:column;gap:8px;max-height:720px;overflow:auto;margin-top:6px}
+.hist-item{display:flex;align-items:center;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(0,0,0,0.12)}
+.dot{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
+.canvas-wrap{margin-top:8px}
+/* small devices: vertical stack, everything fits without scrolling if possible */
+@media (max-width:900px){
+  .layout{flex-direction:column;align-items:center}
+  #wheel-svg{width:320px;height:320px}
+  .right{width:100%}
+  .table-grid{grid-template-columns:repeat(3,60px)}
+  #wheel-svg{width:300px;height:300px}
+}
+@media (max-width:420px){
+  .title{font-size:28px}
+  #wheel-svg{width:260px;height:260px}
+  .table-grid{grid-template-columns:repeat(3,50px)}
+  .table-number{width:50px;height:38px;font-size:14px}
+  .center-cap{width:90px;height:90px}
+}
 </style>
 </head>
 <body>
-<div class="card" role="application" aria-label="Ruleta estilo Casino">
-  <div class="result-display" id="winner">NÃºmero ganador: <span id="winnerSpan">â€”</span></div>
+<div class="app">
+  <header class="header">
+    <div class="title">Ruleta Loco</div>
+    <div class="subtitle">Estilo Las Vegas — Mesa verde • Compatible móvil</div>
+  </header>
 
-  <div class="left">
-    <div class="pointer"></div>
-    <div class="wheel-wrap">
-      <svg class="ruleta" viewBox="0 0 360 360" role="img" aria-label="Ruleta">
-        <g id="wheel" transform="translate(180,180)"></g>
-        <circle cx="180" cy="180" r="36" fill="#111" stroke="#fafafa" stroke-width="3" />
-      </svg>
-    </div>
-    <div class="controls">
-      <button id="spin">Girar</button>
-      <button id="clear" class="secondary">Borrar historial</button>
-    </div>
-  </div>
+  <main class="layout">
+    <section class="left">
+      <div class="card wheel-stage" aria-label="Ruleta">
+        <div class="pointer" aria-hidden="true"></div>
+        <svg id="wheel-svg" viewBox="0 0 500 500" aria-hidden="false"></svg>
+        <div id="ball" class="ball" aria-hidden="true"></div>
+        <div class="center-cap">—</div>
+      </div>
 
-  <div class="right">
-    <div>
-      <div style="font-weight:700;margin-bottom:6px">Historial</div>
-      <div id="history" class="history">â€”</div>
-    </div>
-    <div>
-      <div style="font-weight:700;margin-bottom:6px">DistribuciÃ³n de premios</div>
-      <div class="chart"><canvas id="chart"></canvas></div>
-    </div>
-  </div>
+      <div class="controls">
+        <button id="spinBtn" class="btn">Play</button>
+        <button id="resetBtn" class="btn ghost">Reset History</button>
+        <button id="muteBtn" class="btn ghost">Mute</button>
+      </div>
+
+      <div class="card table-wrap">
+        <div class="table-title">Mesa de Apuestas (decorativa)</div>
+        <div class="table-specials">
+          <div class="special">1st 12</div>
+          <div class="special">2nd 12</div>
+          <div class="special">3rd 12</div>
+          <div class="special">Even</div>
+          <div class="special">Odd</div>
+          <div class="special">Red</div>
+          <div class="special">Black</div>
+        </div>
+
+        <div class="table-grid-wrap">
+          <div class="zero-box">
+            <div class="table-number green" data-num="0">0</div>
+          </div>
+          <div class="table-grid" id="numbersGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="right">
+      <div class="hist-card card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:800">Historial (últimos 20)</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.6)">Actualiza con cada tiro</div>
+        </div>
+        <div class="canvas-wrap"><canvas id="hist-chart" width="600" height="140"></canvas></div>
+        <div class="hist-list" id="histList"></div>
+      </div>
+    </aside>
+
+  </main>
 </div>
 
+<div id="coin" class="coin" aria-hidden="true">€</div>
+
 <script>
-const sectors = [];
-for(let i=0;i<=36;i++){
-  let color = (i===0)?'var(--green)':((i%2===0)?'var(--black)':'var(--red)');
-  sectors.push({label:i.toString(), color});
+// Datos
+const numbers = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
+const redSet = new Set([32,19,21,25,34,27,36,30,23,5,16,1,14,9,18,7,12,3]);
+const colors = {};
+for(const n of numbers) colors[n] = (n===0)? 'green' : (redSet.has(n)? 'red' : 'black');
+
+// Construir rueda SVG
+const svg = document.getElementById('wheel-svg');
+const cx = 250, cy = 250, r = 200; const sectorAngle = 360 / numbers.length;
+for(let i=0;i<numbers.length;i++){
+  const start = (i*sectorAngle) - sectorAngle/2;
+  const end = start + sectorAngle;
+  const startP = polar(cx,cy,r,end);
+  const endP = polar(cx,cy,r,start);
+  const d = `M ${cx} ${cy} L ${startP.x} ${startP.y} A ${r} ${r} 0 0 0 ${endP.x} ${endP.y} Z`;
+  const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.setAttribute('d',d);
+  path.setAttribute('fill', colors[numbers[i]]==='red'? '#b2182b' : (colors[numbers[i]]==='black'? '#0b0b0b' : '#0f6b3a'));
+  path.setAttribute('stroke','#222'); path.setAttribute('stroke-width','1'); svg.appendChild(path);
+  // label
+  const ang = (start+end)/2; const lp = polar(cx,cy,r-48,ang);
+  const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+  text.setAttribute('x',lp.x); text.setAttribute('y',lp.y); text.setAttribute('fill','#fff'); text.setAttribute('font-size','18'); text.setAttribute('text-anchor','middle'); text.setAttribute('dominant-baseline','central');
+  text.textContent = numbers[i]; svg.appendChild(text);
 }
+const ring = document.createElementNS('http://www.w3.org/2000/svg','circle'); ring.setAttribute('cx',cx); ring.setAttribute('cy',cy); ring.setAttribute('r',r+6); ring.setAttribute('fill','none'); ring.setAttribute('stroke','#1b1b1b'); ring.setAttribute('stroke-width','14'); svg.appendChild(ring);
+function polar(cx,cy,rad,deg){ const radAng=(deg-90)*Math.PI/180; return {x: cx + rad*Math.cos(radAng), y: cy + rad*Math.sin(radAng)} }
 
-const wheelG = document.querySelector('#wheel');
-const spinBtn = document.getElementById('spin');
-const clearBtn = document.getElementById('clear');
-const historyEl = document.getElementById('history');
-const canvas = document.getElementById('chart');
-const ctx = canvas.getContext('2d');
-const winnerSpan = document.getElementById('winnerSpan');
-let rotation = 0;
-let counts = Array(sectors.length).fill(0);
-let history = [];
+// Construir mesa de apuesta (1..36 en layout 3 columnas)
+const grid = document.getElementById('numbersGrid'); const tableOrder = [];
+for(let row=1;row<=12;row++){ tableOrder.push(3*row); tableOrder.push(3*row-1); tableOrder.push(3*row-2); }
+for(const num of tableOrder){ const div = document.createElement('div'); const clr = (num===0)? 'green' : (redSet.has(num)? 'red' : 'black'); div.className = `table-number ${(clr==='red')?'red':(clr==='black'?'black':'green')}`; div.textContent = num; div.dataset.num = num; grid.appendChild(div); }
 
-function drawWheel(){
-  wheelG.innerHTML = '';
-  const radius = 160;
-  for(let i=0;i<sectors.length;i++){
-    const start = (i/sectors.length)*2*Math.PI - Math.PI/2;
-    const end = ((i+1)/sectors.length)*2*Math.PI - Math.PI/2;
-    const large = end-start>Math.PI?1:0;
-    const x1 = Math.cos(start)*radius;
-    const y1 = Math.sin(start)*radius;
-    const x2 = Math.cos(end)*radius;
-    const y2 = Math.sin(end)*radius;
-    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-    path.setAttribute('d',`M0,0 L${x1},${y1} A${radius},${radius} 0 ${large} 1 ${x2},${y2} Z`);
-    path.setAttribute('fill',sectors[i].color);
-    path.setAttribute('stroke','#fafafa');
-    path.setAttribute('stroke-width','0.5');
-    wheelG.appendChild(path);
+// Coin element
+const coin = document.getElementById('coin');
 
-    const mid = (start+end)/2;
-    const tx = Math.cos(mid)*(radius*0.7);
-    const ty = Math.sin(mid)*(radius*0.7)+4;
-    const text = document.createElementNS('http://www.w3.org/2000/svg','text');
-    text.setAttribute('x',tx);
-    text.setAttribute('y',ty);
-    text.setAttribute('fill','#fafafa');
-    text.setAttribute('font-size','10');
-    text.setAttribute('text-anchor','middle');
-    text.setAttribute('font-weight','700');
-    text.textContent = sectors[i].label;
-    wheelG.appendChild(text);
-  }
-}
+// History state and UI
+let history = JSON.parse(localStorage.getItem('rouletteHistory') || '[]');
+const histList = document.getElementById('histList'); const histCanvas = document.getElementById('hist-chart'); const hctx = histCanvas.getContext('2d');
+function saveHist(){ localStorage.setItem('rouletteHistory', JSON.stringify(history)); }
+function renderHistory(){ histList.innerHTML=''; for(const h of history){ const el = document.createElement('div'); el.className='hist-item'; const left = document.createElement('div'); left.style.display='flex'; left.style.alignItems='center'; left.style.gap='10px'; const dot = document.createElement('div'); dot.className='dot'; dot.textContent = h.number; dot.style.background = (h.color==='red')? '#b2182b' : (h.color==='black'? '#111' : '#0f6b3a'); left.appendChild(dot); const when = document.createElement('div'); when.style.fontSize='12px'; when.style.color='rgba(255,255,255,0.7)'; when.textContent = new Date(h.time).toLocaleTimeString(); left.appendChild(when); const right = document.createElement('div'); right.style.fontWeight='800'; right.textContent = `${h.number} — ${h.color.toUpperCase()}`; el.appendChild(left); el.appendChild(right); histList.appendChild(el); } }
+function drawHistChart(){ const w=histCanvas.width,h=histCanvas.height; hctx.clearRect(0,0,w,h); const items = history.slice(0,20).reverse(); const pad=8; const boxW=Math.max(12,(w-pad*2)/Math.max(1,items.length)); items.forEach((it,i)=>{ const x=pad+i*boxW,y=pad,bh=h-pad*2; hctx.fillStyle = (it.color==='red')? '#b2182b' : (it.color==='black'? '#111' : '#0f6b3a'); hctx.fillRect(x,y,boxW-4,bh); hctx.fillStyle='#fff'; hctx.font='12px monospace'; hctx.textAlign='center'; hctx.fillText(it.number, x+(boxW-4)/2, y+bh/2+5); }); }
+renderHistory(); drawHistChart();
 
-function drawChart(){
-  const w = canvas.width = canvas.clientWidth*devicePixelRatio;
-  const h = canvas.height = canvas.clientHeight*devicePixelRatio;
-  ctx.clearRect(0,0,w,h);
-  const padding = 12*devicePixelRatio;
-  const barW = (w-padding*2)/sectors.length;
-  const max = Math.max(1,...counts);
-  for(let i=0;i<sectors.length;i++){
-    const barH = (counts[i]/max)*(h-padding*2);
-    ctx.fillStyle = sectors[i].color;
-    ctx.fillRect(padding + i*barW, h-padding-barH, barW*0.8, barH);
-  }
-}
+// Audio engine
+const AudioEngine = (function(){ const ctx=(typeof AudioContext!=='undefined')? new AudioContext():null; function tone(freq,dur,type='sine',gain=0.02){ if(!ctx) return; const o=ctx.createOscillator(); const g=ctx.createGain(); o.type=type; o.frequency.value=freq; g.gain.value=gain; o.connect(g); g.connect(ctx.destination); o.start(); g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur); setTimeout(()=>{ try{o.stop();}catch(e){} }, dur*1000+50); } function sweep(){ if(!ctx) return; const o=ctx.createOscillator(); const g=ctx.createGain(); o.type='sawtooth'; o.frequency.value=600; g.gain.value=0.02; o.connect(g); g.connect(ctx.destination); o.start(); o.frequency.exponentialRampToValueAtTime(80, ctx.currentTime+3.6); g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+3.8); setTimeout(()=>{ try{o.stop();}catch(e){} },4000); } return {tone,sweep}; })();
 
-function spin(){
-  spinBtn.disabled=true;
-  const extra = Math.random()*360;
-  const turns = 6 + Math.floor(Math.random()*6);
-  const target = rotation + turns*360 + extra;
-  wheelG.style.transition = 'transform 5s cubic-bezier(.18,.91,.2,1)';
-  wheelG.style.transform = `rotate(${target}deg)`;
-  wheelG.addEventListener('transitionend',()=>{
-    rotation = target%360;
-    const angle = (360-rotation+90)%360;
-    const sectorIndex = Math.floor(angle/(360/sectors.length))%sectors.length;
-    counts[sectorIndex]++;
-    history.unshift({time:new Date(), label:sectors[sectorIndex].label});
-    if(history.length>8) history.pop();
-    updateHistory();
-    drawChart();
-    winnerSpan.textContent = `${sectors[sectorIndex].label} (${getColorName(sectors[sectorIndex].color)})`;
-    spinBtn.disabled=false;
-  },{once:true});
-}
+// Spin logic (animation synchronized with computed landing)
+const wheelEl = document.getElementById('wheel-svg'); const ballEl = document.getElementById('ball'); const spinBtn = document.getElementById('spinBtn'); const resetBtn = document.getElementById('resetBtn'); const muteBtn = document.getElementById('muteBtn'); let spinning=false; let muted=false; const spinTime = 3800;
+function normalize(a){ return ((a%360)+360)%360; }
+function spinOnce(){ if(spinning) return; spinning=true; spinBtn.disabled=true; // choose landing
+  const landing = Math.floor(Math.random()*numbers.length); const centerAngle = landing * sectorAngle; const jitter = (Math.random()-0.5)*(sectorAngle*0.6); const turns = Math.floor(Math.random()*3)+5; const target = 360*turns + centerAngle + jitter; wheelEl.style.transition = `transform ${spinTime/1000}s cubic-bezier(.08,.88,.18,1)`; wheelEl.style.transform = `rotate(${target}deg)`; ballEl.style.transition = `transform ${spinTime/1000}s cubic-bezier(.14,.84,.22,1)`; ballEl.style.transform = `translateX(-50%) translateY(-12px)`; if(!muted) AudioEngine.sweep();
+  wheelEl.addEventListener('transitionend', function onEnd(){ wheelEl.removeEventListener('transitionend', onEnd); const final = normalize(target); // find closest sector center
+    let best=0,bestDiff=360; for(let i=0;i<numbers.length;i++){ const center = normalize(i*sectorAngle); const diff = Math.abs(normalize(center - final)); if(diff<bestDiff){ bestDiff=diff; best=i; } }
+    const number = numbers[best]; const color = colors[number]; // ball rest
+    ballEl.style.transition = 'transform 0.6s cubic-bezier(.2,.9,.3,1)'; ballEl.style.transform = 'translateX(-50%) translateY(8px)'; if(!muted) AudioEngine.tone(880,0.18,'square',0.04); // update center
+    const cap = document.querySelector('.center-cap'); cap.textContent = `${number}`; cap.style.color = (color==='red')? '#ffdfe0' : (color==='black'? '#ddd' : '#dfffe0'); // history
+    history.unshift({number,color,time:Date.now()}); if(history.length>20) history = history.slice(0,20); saveHist(); renderHistory(); drawHistChart(); // place coin
+    placeCoinOnTable(number); setTimeout(()=>{ spinning=false; spinBtn.disabled=false; },400);
+  }); }
 
-function getColorName(color){
-  if(color==='var(--green)') return 'verde';
-  if(color==='var(--red)') return 'rojo';
-  if(color==='var(--black)') return 'negro';
-  return '';
-}
+function placeCoinOnTable(number){ const target = document.querySelector(`[data-num='${number}']`); if(!target) return; const rect = target.getBoundingClientRect(); const bodyRect = document.body.getBoundingClientRect(); const cx = rect.left + rect.width/2; const cy = rect.top + rect.height/2; coin.style.left = `${cx}px`; coin.style.top = `${cy}px`; coin.classList.add('show'); coin.setAttribute('aria-hidden','false'); setTimeout(()=>{ coin.classList.remove('show'); coin.setAttribute('aria-hidden','true'); },2400); }
 
-function updateHistory(){
-  if(history.length===0){historyEl.textContent='â€”';return;}
-  historyEl.innerHTML='';
-  history.forEach(h=>{
-    const d=document.createElement('div');
-    d.textContent=`${h.time.toLocaleTimeString()} â€” ${h.label}`;
-    historyEl.appendChild(d);
-  });
-}
+spinBtn.addEventListener('click', ()=>{ try{ /* resume audio context on user gesture if needed */ }catch(e){} spinOnce(); });
+resetBtn.addEventListener('click', ()=>{ if(confirm('Borrar historial?')){ history=[]; saveHist(); renderHistory(); drawHistChart(); coin.classList.remove('show'); } });
+muteBtn.addEventListener('click', ()=>{ muted = !muted; muteBtn.textContent = muted? 'Unmute' : 'Mute'; });
+document.addEventListener('keydown',(e)=>{ if(e.key===' '){ e.preventDefault(); spinBtn.click(); } });
 
-drawWheel();
-drawChart();
-spinBtn.addEventListener('click',spin);
-clearBtn.addEventListener('click',()=>{counts=Array(sectors.length).fill(0);history=[];updateHistory();drawChart();winnerSpan.textContent='â€”';});
-window.addEventListener('resize',drawChart);
+// initial
+wheelEl.style.transform='rotate(0deg)'; ballEl.style.transform='translateX(-50%) translateY(-6px)';
+window.addEventListener('resize', ()=>{ coin.classList.remove('show'); });
 </script>
 </body>
 </html>
