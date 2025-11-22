@@ -1,0 +1,2539 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🚀 Invasores Espaciales - El Club del Loco</title>
+    <style>
+      /* ============================================
+       PHASE 1 - STEP 2: CSS STYLING
+       ============================================ */
+
+      /* Variables de color */
+      :root {
+        --space-dark: #0a0e27;
+        --space-blue: #1a1f3a;
+        --cyan-bright: #00fff7;
+        --green-ship: #00ff41;
+        --red-enemy: #ff0040;
+        --yellow-bullet: #ffed00;
+        --white-text: #ffffff;
+        --gold-score: #ffd700;
+      }
+
+      /* Reset y configuración base */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: "Courier New", monospace;
+      }
+
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(
+          180deg,
+          #0a0e27 0%,
+          #1a1f3a 50%,
+          #0f1628 100%
+        );
+        animation: fondoEspacial 10s ease-in-out infinite alternate;
+        color: var(--white-text);
+      }
+
+      @keyframes fondoEspacial {
+        0% {
+          background: linear-gradient(
+            180deg,
+            #0a0e27 0%,
+            #1a1f3a 50%,
+            #0f1628 100%
+          );
+        }
+        50% {
+          background: linear-gradient(
+            180deg,
+            #1a1f3a 0%,
+            #0a0e27 50%,
+            #1a1f3a 100%
+          );
+        }
+        100% {
+          background: linear-gradient(
+            180deg,
+            #0f1628 0%,
+            #1a1f3a 50%,
+            #0a0e27 100%
+          );
+        }
+      }
+
+      /* Contenedor principal */
+      #gameContainer {
+        position: relative;
+        max-width: 900px;
+        width: 100%;
+        padding: 20px;
+      }
+
+      /* Pantalla de inicio */
+      #startScreen {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        background: rgba(10, 14, 39, 0.95);
+        padding: 40px;
+        border-radius: 20px;
+        border: 3px solid var(--cyan-bright);
+        box-shadow: 0 0 30px rgba(0, 255, 247, 0.5);
+        z-index: 100;
+        min-width: 320px;
+      }
+
+      #startScreen h1 {
+        font-size: 2.5em;
+        color: var(--cyan-bright);
+        text-shadow: 0 0 20px rgba(0, 255, 247, 0.8);
+        margin-bottom: 10px;
+        letter-spacing: 3px;
+      }
+
+      #startScreen h2 {
+        font-size: 1.2em;
+        color: var(--gold-score);
+        margin-bottom: 30px;
+        font-weight: normal;
+      }
+
+      .highScoreDisplay {
+        font-size: 1.5em;
+        color: var(--yellow-bullet);
+        margin: 20px 0;
+        padding: 15px;
+        background: rgba(255, 237, 0, 0.1);
+        border-radius: 10px;
+        border: 2px solid var(--yellow-bullet);
+      }
+
+      .instructions {
+        margin: 25px 0;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        font-size: 0.95em;
+        line-height: 1.8;
+        text-align: left;
+      }
+
+      .instructions strong {
+        color: var(--green-ship);
+      }
+
+      /* Botones */
+      .btn {
+        background: linear-gradient(180deg, var(--cyan-bright), #00b8b0);
+        border: none;
+        padding: 15px 35px;
+        font-size: 1.3em;
+        font-weight: bold;
+        color: #000;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: "Courier New", monospace;
+        box-shadow: 0 5px 15px rgba(0, 255, 247, 0.4);
+        text-transform: uppercase;
+      }
+
+      .btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 255, 247, 0.6);
+        background: linear-gradient(180deg, #00fff7, #00d4cc);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+      }
+
+      .btn.secondary {
+        background: linear-gradient(180deg, #555, #333);
+        color: var(--white-text);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+        padding: 10px 20px;
+        font-size: 1em;
+      }
+
+      .btn.secondary:hover {
+        background: linear-gradient(180deg, #666, #444);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+      }
+
+      /* HUD - Heads Up Display */
+      #hud {
+        display: none;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding: 15px 20px;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 10px;
+        border: 2px solid var(--cyan-bright);
+        font-size: 1.2em;
+      }
+
+      #hud.active {
+        display: flex;
+      }
+
+      .hudSection {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .hudLabel {
+        font-size: 0.8em;
+        color: var(--cyan-bright);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .hudValue {
+        font-size: 1.3em;
+        font-weight: bold;
+        color: var(--gold-score);
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+      }
+
+      #livesDisplay {
+        display: flex;
+        gap: 5px;
+      }
+
+      /* Canvas */
+      #gameCanvas {
+        display: none;
+        background: #000;
+        border: 4px solid var(--cyan-bright);
+        border-radius: 10px;
+        box-shadow: 0 0 30px rgba(0, 255, 247, 0.3),
+          inset 0 0 20px rgba(0, 255, 247, 0.1);
+        image-rendering: crisp-edges;
+        image-rendering: pixelated;
+      }
+
+      #gameCanvas.active {
+        display: block;
+        margin: 0 auto;
+      }
+
+      /* Controles móviles */
+      #mobileControls {
+        display: none;
+        justify-content: space-around;
+        align-items: center;
+        margin-top: 20px;
+        gap: 15px;
+      }
+
+      #mobileControls.active {
+        display: flex;
+      }
+
+      .mobileBtn {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        border: 3px solid var(--cyan-bright);
+        background: rgba(0, 255, 247, 0.2);
+        color: var(--cyan-bright);
+        font-size: 2em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.2s;
+        box-shadow: 0 0 15px rgba(0, 255, 247, 0.3);
+      }
+
+      .mobileBtn:active {
+        background: rgba(0, 255, 247, 0.4);
+        transform: scale(0.95);
+        box-shadow: 0 0 25px rgba(0, 255, 247, 0.6);
+      }
+
+      #fireBtn {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 0, 64, 0.3);
+        border-color: var(--red-enemy);
+        color: var(--red-enemy);
+        box-shadow: 0 0 15px rgba(255, 0, 64, 0.3);
+      }
+
+      #fireBtn:active {
+        background: rgba(255, 0, 64, 0.5);
+        box-shadow: 0 0 25px rgba(255, 0, 64, 0.6);
+      }
+
+      /* Pantalla de pausa */
+      #pauseScreen {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        background: rgba(10, 14, 39, 0.98);
+        padding: 40px;
+        border-radius: 20px;
+        border: 3px solid var(--yellow-bullet);
+        box-shadow: 0 0 30px rgba(255, 237, 0, 0.5);
+        z-index: 200;
+        min-width: 300px;
+      }
+
+      #pauseScreen.active {
+        display: block;
+      }
+
+      #pauseScreen h2 {
+        font-size: 2.5em;
+        color: var(--yellow-bullet);
+        margin-bottom: 30px;
+        text-shadow: 0 0 20px rgba(255, 237, 0, 0.8);
+      }
+
+      .pauseButtons {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      /* Pantalla de Game Over */
+      #gameOverScreen {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        background: rgba(10, 14, 39, 0.98);
+        padding: 40px;
+        border-radius: 20px;
+        border: 3px solid var(--red-enemy);
+        box-shadow: 0 0 30px rgba(255, 0, 64, 0.5);
+        z-index: 200;
+        min-width: 320px;
+      }
+
+      #gameOverScreen.active {
+        display: block;
+      }
+
+      #gameOverScreen h2 {
+        font-size: 2.5em;
+        color: var(--red-enemy);
+        margin-bottom: 20px;
+        text-shadow: 0 0 20px rgba(255, 0, 64, 0.8);
+      }
+
+      .gameOverButtons {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        #gameContainer {
+          padding: 10px;
+        }
+
+        #startScreen h1 {
+          font-size: 2em;
+        }
+
+        #hud {
+          flex-wrap: wrap;
+          font-size: 1em;
+        }
+
+        .instructions {
+          font-size: 0.85em;
+        }
+
+        .btn {
+          padding: 12px 25px;
+          font-size: 1.1em;
+        }
+      }
+
+      @media (max-width: 480px) {
+        #startScreen {
+          padding: 25px;
+          min-width: 280px;
+        }
+
+        #startScreen h1 {
+          font-size: 1.6em;
+        }
+
+        #startScreen h2 {
+          font-size: 1em;
+        }
+
+        .btn {
+          padding: 10px 20px;
+          font-size: 1em;
+        }
+
+        .mobileBtn {
+          width: 60px;
+          height: 60px;
+          font-size: 1.5em;
+        }
+
+        #fireBtn {
+          width: 70px;
+          height: 70px;
+        }
+      }
+
+      /* Debug info (solo desarrollo) */
+      #debugInfo {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.8);
+        color: #0f0;
+        padding: 10px;
+        font-size: 0.8em;
+        border-radius: 5px;
+        display: none;
+        z-index: 1000;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ============================================
+       PHASE 1 - STEP 1: HTML STRUCTURE
+       ============================================ -->
+
+    <div id="gameContainer">
+      <!-- Pantalla de inicio -->
+      <div id="startScreen">
+        <h1>🚀 INVASORES ESPACIALES</h1>
+        <h2>El Club del Loco</h2>
+
+        <div class="highScoreDisplay">
+          <div>RÉCORD ACTUAL</div>
+          <div id="highScoreValue" style="font-size: 1.5em">0</div>
+        </div>
+
+        <div class="instructions">
+          <div><strong>CONTROLES:</strong></div>
+          <div>← → o A/D: Mover nave</div>
+          <div>ESPACIO o W: Disparar</div>
+          <div>ESC o P: Pausa</div>
+          <div>M: Silenciar</div>
+          <div style="margin-top: 15px; color: var(--yellow-bullet)">
+            ¡Destruye a los invasores antes de que lleguen al suelo!
+          </div>
+        </div>
+
+        <button class="btn" id="startBtn">INICIAR JUEGO</button>
+      </div>
+
+      <!-- HUD del juego -->
+      <div id="hud">
+        <div class="hudSection">
+          <div class="hudLabel">Puntuación</div>
+          <div class="hudValue" id="scoreDisplay">0</div>
+        </div>
+
+        <div class="hudSection">
+          <div class="hudLabel">Récord</div>
+          <div class="hudValue" id="highScoreHUD">0</div>
+        </div>
+
+        <div class="hudSection">
+          <div class="hudLabel">Oleada</div>
+          <div class="hudValue" id="waveDisplay">1</div>
+        </div>
+
+        <div class="hudSection">
+          <div class="hudLabel">Vidas</div>
+          <div id="livesDisplay"></div>
+        </div>
+      </div>
+
+      <!-- Canvas del juego -->
+      <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+      <!-- Controles móviles -->
+      <div id="mobileControls">
+        <div class="mobileBtn" id="leftBtn">◄</div>
+        <div class="mobileBtn" id="fireBtn">●</div>
+        <div class="mobileBtn" id="rightBtn">►</div>
+      </div>
+
+      <!-- Pantalla de pausa -->
+      <div id="pauseScreen">
+        <h2>⏸ PAUSA</h2>
+        <div class="pauseButtons">
+          <button class="btn" id="resumeBtn">CONTINUAR</button>
+          <button class="btn secondary" id="restartFromPauseBtn">
+            REINICIAR
+          </button>
+          <button class="btn secondary" id="muteBtn">SILENCIAR</button>
+        </div>
+      </div>
+
+      <!-- Pantalla de Game Over -->
+      <div id="gameOverScreen">
+        <h2>💥 GAME OVER</h2>
+        <div class="highScoreDisplay">
+          <div>PUNTUACIÓN FINAL</div>
+          <div id="finalScore" style="font-size: 1.5em">0</div>
+        </div>
+        <div
+          id="newHighScore"
+          style="
+            display: none;
+            color: var(--gold-score);
+            font-size: 1.3em;
+            margin: 15px 0;
+          "
+        >
+          ¡NUEVO RÉCORD! 🏆
+        </div>
+        <div class="gameOverButtons">
+          <button class="btn" id="playAgainBtn">JUGAR DE NUEVO</button>
+          <button class="btn secondary" id="backToMenuBtn">
+            MENÚ PRINCIPAL
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Debug info (oculto por defecto) -->
+    <div id="debugInfo"></div>
+
+    <script>
+      /* ============================================
+       PHASE 1 - STEP 3: GAME CANVAS SETUP
+       ============================================ */
+
+      // Referencias al DOM
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+      const startScreen = document.getElementById("startScreen");
+      const hud = document.getElementById("hud");
+      const pauseScreen = document.getElementById("pauseScreen");
+      const gameOverScreen = document.getElementById("gameOverScreen");
+      const mobileControls = document.getElementById("mobileControls");
+      const debugInfo = document.getElementById("debugInfo");
+
+      // Botones
+      const startBtn = document.getElementById("startBtn");
+      const resumeBtn = document.getElementById("resumeBtn");
+      const restartFromPauseBtn = document.getElementById(
+        "restartFromPauseBtn"
+      );
+      const muteBtn = document.getElementById("muteBtn");
+      const playAgainBtn = document.getElementById("playAgainBtn");
+      const backToMenuBtn = document.getElementById("backToMenuBtn");
+
+      // Mobile controls
+      const leftBtn = document.getElementById("leftBtn");
+      const rightBtn = document.getElementById("rightBtn");
+      const fireBtn = document.getElementById("fireBtn");
+
+      // Configuración del canvas
+      const CANVAS_WIDTH = 800;
+      const CANVAS_HEIGHT = 600;
+      let canvasScale = 1;
+
+      // Ajustar canvas para ser responsive
+      function resizeCanvas() {
+        const container = document.getElementById("gameContainer");
+        const containerWidth = container.clientWidth - 40; // padding
+
+        if (containerWidth < CANVAS_WIDTH) {
+          canvasScale = containerWidth / CANVAS_WIDTH;
+          canvas.style.width = containerWidth + "px";
+          canvas.style.height = CANVAS_HEIGHT * canvasScale + "px";
+        } else {
+          canvasScale = 1;
+          canvas.style.width = CANVAS_WIDTH + "px";
+          canvas.style.height = CANVAS_HEIGHT + "px";
+        }
+
+        // Detectar si es móvil
+        const isMobile =
+          "ontouchstart" in window || navigator.maxTouchPoints > 0;
+        if (isMobile && gameState === GAME_STATES.PLAYING) {
+          mobileControls.classList.add("active");
+        }
+      }
+
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+
+      /* ============================================
+       PHASE 1 - STEP 4: GAME STATE MANAGEMENT
+       ============================================ */
+
+      // Estados del juego
+      const GAME_STATES = {
+        START: "START",
+        PLAYING: "PLAYING",
+        PAUSED: "PAUSED",
+        GAME_OVER: "GAME_OVER",
+        WAVE_COMPLETE: "WAVE_COMPLETE",
+      };
+
+      let gameState = GAME_STATES.START;
+      let score = 0;
+      let highScore = 0;
+      let wave = 1;
+      let lives = 3;
+
+      // Variables de tiempo para el game loop
+      let lastTime = 0;
+      let deltaTime = 0;
+      let fps = 0;
+      let frameCount = 0;
+      let lastFpsUpdate = 0;
+
+      // RequestAnimationFrame ID para poder cancelar
+      let animationId = null;
+
+      // Cargar high score del localStorage
+      function loadHighScore() {
+        const saved = localStorage.getItem("invasoresHighScore");
+        highScore = saved ? parseInt(saved) : 0;
+        updateHighScoreDisplay();
+      }
+
+      // Guardar high score en localStorage
+      function saveHighScore() {
+        if (score > highScore) {
+          highScore = score;
+          localStorage.setItem("invasoresHighScore", highScore.toString());
+          return true; // nuevo récord
+        }
+        return false;
+      }
+
+      // Actualizar displays de high score
+      function updateHighScoreDisplay() {
+        document.getElementById("highScoreValue").textContent = highScore;
+        document.getElementById("highScoreHUD").textContent = highScore;
+      }
+
+      // Inicializar juego
+      function initGame() {
+        console.log("🎮 Inicializando juego...");
+
+        score = 0;
+        wave = 1;
+        lives = 3;
+
+        updateScoreDisplay();
+        updateWaveDisplay();
+        updateLivesDisplay();
+
+        // FASE 2: Inicializar jugador y balas
+        resetPlayerPosition();
+        playerBullets = [];
+
+        // Resetear estado de teclas
+        keys.left = false;
+        keys.right = false;
+        keys.a = false;
+        keys.d = false;
+        canShoot = true;
+
+        // FASE 3: Inicializar aliens y balas enemigas
+        createAlienFormation();
+        enemyBullets = [];
+        alienDirection = 1;
+        alienMoveTimer = 0;
+        alienMoveInterval = 800;
+        enemyShootTimer = 0;
+        animationToggleTimer = 0;
+
+        // FASE 4: Inicializar escudos y explosiones
+        createShields();
+        explosions = [];
+
+        // FASE 5: Inicializar UFO y puntuaciones flotantes
+        ufo.active = false;
+        ufoSpawnTimer = 0;
+        ufoSpawnInterval = 15000;
+        floatingScores = [];
+        showingWaveComplete = false;
+
+        // TODO: Inicializar en fases siguientes
+        // - Sound system (Fase 6)
+
+        console.log("✅ Juego inicializado - ¡Todo listo para jugar!");
+      }
+
+      // Actualizar displays del HUD
+      function updateScoreDisplay() {
+        document.getElementById("scoreDisplay").textContent = score;
+      }
+
+      function updateWaveDisplay() {
+        document.getElementById("waveDisplay").textContent = wave;
+      }
+
+      function updateLivesDisplay() {
+        const livesContainer = document.getElementById("livesDisplay");
+        livesContainer.innerHTML = "";
+
+        for (let i = 0; i < lives; i++) {
+          const lifeIcon = document.createElement("div");
+          lifeIcon.textContent = "🚀";
+          lifeIcon.style.fontSize = "1.5em";
+          livesContainer.appendChild(lifeIcon);
+        }
+      }
+
+      // Transiciones de estado
+      function changeState(newState) {
+        console.log(`🔄 Cambiando estado: ${gameState} → ${newState}`);
+        gameState = newState;
+
+        // Ocultar todas las pantallas
+        startScreen.style.display = "none";
+        pauseScreen.classList.remove("active");
+        gameOverScreen.classList.remove("active");
+        hud.classList.remove("active");
+        canvas.classList.remove("active");
+        mobileControls.classList.remove("active");
+
+        // Mostrar elementos según el estado
+        switch (newState) {
+          case GAME_STATES.START:
+            startScreen.style.display = "block";
+            break;
+
+          case GAME_STATES.PLAYING:
+            hud.classList.add("active");
+            canvas.classList.add("active");
+            const isMobile =
+              "ontouchstart" in window || navigator.maxTouchPoints > 0;
+            if (isMobile) {
+              mobileControls.classList.add("active");
+            }
+            break;
+
+          case GAME_STATES.PAUSED:
+            hud.classList.add("active");
+            canvas.classList.add("active");
+            pauseScreen.classList.add("active");
+            break;
+
+          case GAME_STATES.GAME_OVER:
+            hud.classList.add("active");
+            canvas.classList.add("active");
+            gameOverScreen.classList.add("active");
+
+            // Actualizar pantalla de game over
+            document.getElementById("finalScore").textContent = score;
+            const isNewHighScore = saveHighScore();
+            document.getElementById("newHighScore").style.display =
+              isNewHighScore ? "block" : "none";
+            updateHighScoreDisplay();
+            break;
+        }
+      }
+
+      // Reiniciar juego
+      function resetGame() {
+        console.log("🔄 Reiniciando juego...");
+        initGame();
+        changeState(GAME_STATES.PLAYING);
+      }
+
+      /* ============================================
+         PHASE 2 - STEP 5: PLAYER SHIP
+         ============================================ */
+
+      // Objeto del jugador
+      const player = {
+        x: CANVAS_WIDTH / 2,
+        y: CANVAS_HEIGHT - 80,
+        width: 40,
+        height: 30,
+        speed: 300, // píxeles por segundo
+        color: "#00ff41",
+        alive: true,
+        invincible: false,
+        invincibleTimer: 0,
+      };
+
+      // Dibujar la nave del jugador
+      function drawPlayer() {
+        if (!player.alive) return;
+
+        ctx.save();
+
+        // Efecto de parpadeo si es invencible
+        if (player.invincible) {
+          const blinkRate = Math.floor(Date.now() / 100) % 2;
+          if (blinkRate === 0) {
+            ctx.globalAlpha = 0.5;
+          }
+        }
+
+        // Cuerpo de la nave (forma de triángulo/flecha)
+        ctx.fillStyle = player.color;
+        ctx.beginPath();
+        // Punta superior
+        ctx.moveTo(player.x, player.y);
+        // Esquina inferior izquierda
+        ctx.lineTo(player.x - player.width / 2, player.y + player.height);
+        // Base inferior (pequeña indentación)
+        ctx.lineTo(player.x - player.width / 4, player.y + player.height - 5);
+        ctx.lineTo(player.x + player.width / 4, player.y + player.height - 5);
+        // Esquina inferior derecha
+        ctx.lineTo(player.x + player.width / 2, player.y + player.height);
+        ctx.closePath();
+        ctx.fill();
+
+        // Contorno brillante
+        ctx.strokeStyle = "#00fff7";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Detalles de la nave (cockpit)
+        ctx.fillStyle = "#00fff7";
+        ctx.beginPath();
+        ctx.arc(player.x, player.y + 10, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+      }
+
+      // Actualizar posición del jugador
+      function updatePlayer(dt) {
+        if (!player.alive) return;
+
+        const deltaSeconds = dt / 1000;
+
+        // Movimiento izquierda/derecha
+        if (keys.left || keys.a) {
+          player.x -= player.speed * deltaSeconds;
+        }
+        if (keys.right || keys.d) {
+          player.x += player.speed * deltaSeconds;
+        }
+
+        // Mantener dentro de los límites de la pantalla
+        const halfWidth = player.width / 2;
+        if (player.x - halfWidth < 0) {
+          player.x = halfWidth;
+        }
+        if (player.x + halfWidth > CANVAS_WIDTH) {
+          player.x = CANVAS_WIDTH - halfWidth;
+        }
+
+        // Actualizar temporizador de invencibilidad
+        if (player.invincible) {
+          player.invincibleTimer -= dt;
+          if (player.invincibleTimer <= 0) {
+            player.invincible = false;
+            player.invincibleTimer = 0;
+          }
+        }
+      }
+
+      // Resetear posición del jugador
+      function resetPlayerPosition() {
+        player.x = CANVAS_WIDTH / 2;
+        player.y = CANVAS_HEIGHT - 80;
+        player.alive = true;
+        player.invincible = true;
+        player.invincibleTimer = 2000; // 2 segundos de invencibilidad
+      }
+
+      /* ============================================
+         PHASE 2 - STEP 6: PLAYER SHOOTING
+         ============================================ */
+
+      // Array de balas del jugador
+      let playerBullets = [];
+
+      // Objeto bala del jugador
+      class PlayerBullet {
+        constructor(x, y) {
+          this.x = x;
+          this.y = y;
+          this.width = 4;
+          this.height = 15;
+          this.speed = 500; // píxeles por segundo
+          this.color = "#ffed00";
+          this.active = true;
+        }
+
+        update(dt) {
+          const deltaSeconds = dt / 1000;
+          this.y -= this.speed * deltaSeconds;
+
+          // Desactivar si sale de la pantalla
+          if (this.y + this.height < 0) {
+            this.active = false;
+          }
+        }
+
+        draw() {
+          ctx.fillStyle = this.color;
+          ctx.fillRect(
+            this.x - this.width / 2,
+            this.y,
+            this.width,
+            this.height
+          );
+
+          // Efecto de brillo
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(
+            this.x - this.width / 4,
+            this.y,
+            this.width / 2,
+            this.height / 2
+          );
+        }
+      }
+
+      // Disparar bala
+      function shootPlayerBullet() {
+        // Solo permitir 1 bala activa a la vez (clásico Space Invaders)
+        const activeBullets = playerBullets.filter((b) => b.active);
+        if (activeBullets.length > 0) return;
+
+        // Crear nueva bala desde la punta de la nave
+        const bullet = new PlayerBullet(player.x, player.y);
+        playerBullets.push(bullet);
+
+        // Sonido de disparo
+        soundPlayerShoot();
+      }
+
+      // Actualizar balas del jugador
+      function updatePlayerBullets(dt) {
+        playerBullets.forEach((bullet) => {
+          if (bullet.active) {
+            bullet.update(dt);
+          }
+        });
+
+        // Limpiar balas inactivas (mantener array limpio)
+        playerBullets = playerBullets.filter((b) => b.active);
+      }
+
+      // Dibujar balas del jugador
+      function drawPlayerBullets() {
+        playerBullets.forEach((bullet) => {
+          if (bullet.active) {
+            bullet.draw();
+          }
+        });
+      }
+
+      /* ============================================
+         PHASE 2 - STEP 7: INPUT HANDLING
+         ============================================ */
+
+      // Estado de las teclas
+      const keys = {
+        left: false,
+        right: false,
+        a: false,
+        d: false,
+        space: false,
+        w: false,
+      };
+
+      // Prevenir disparo automático continuo
+      let canShoot = true;
+
+      // Evento keydown
+      document.addEventListener("keydown", (e) => {
+        // Prevenir comportamiento por defecto
+        if (
+          ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", " "].includes(
+            e.key
+          )
+        ) {
+          e.preventDefault();
+        }
+
+        // Solo procesar input si estamos jugando
+        if (gameState !== GAME_STATES.PLAYING) return;
+
+        // Movimiento
+        if (e.key === "ArrowLeft") keys.left = true;
+        if (e.key === "ArrowRight") keys.right = true;
+        if (e.key.toLowerCase() === "a") keys.a = true;
+        if (e.key.toLowerCase() === "d") keys.d = true;
+
+        // Disparo (solo una vez por pulsación)
+        if (e.key === " " || e.key.toLowerCase() === "w") {
+          if (canShoot) {
+            shootPlayerBullet();
+            canShoot = false;
+          }
+        }
+      });
+
+      // Evento keyup
+      document.addEventListener("keyup", (e) => {
+        if (e.key === "ArrowLeft") keys.left = false;
+        if (e.key === "ArrowRight") keys.right = false;
+        if (e.key.toLowerCase() === "a") keys.a = false;
+        if (e.key.toLowerCase() === "d") keys.d = false;
+        if (e.key === " " || e.key.toLowerCase() === "w") {
+          canShoot = true;
+        }
+      });
+
+      // Controles móviles - Variables para mantener presionado
+      let mobileLeftPressed = false;
+      let mobileRightPressed = false;
+
+      // Touch events para botón izquierdo
+      leftBtn.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        mobileLeftPressed = true;
+        keys.left = true;
+      });
+
+      leftBtn.addEventListener("touchend", (e) => {
+        e.preventDefault();
+        mobileLeftPressed = false;
+        keys.left = false;
+      });
+
+      // Touch events para botón derecho
+      rightBtn.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        mobileRightPressed = true;
+        keys.right = true;
+      });
+
+      rightBtn.addEventListener("touchend", (e) => {
+        e.preventDefault();
+        mobileRightPressed = false;
+        keys.right = false;
+      });
+
+      // Touch event para botón de disparo
+      fireBtn.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        if (gameState === GAME_STATES.PLAYING) {
+          shootPlayerBullet();
+        }
+      });
+
+      /* ============================================
+       GAME LOOP - El corazón del juego
+       ============================================ */
+
+      function gameLoop(currentTime) {
+        // Calcular delta time (tiempo entre frames)
+        deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+
+        // Calcular FPS (para debug)
+        frameCount++;
+        if (currentTime - lastFpsUpdate >= 1000) {
+          fps = frameCount;
+          frameCount = 0;
+          lastFpsUpdate = currentTime;
+        }
+
+        // Limpiar canvas
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+        // Actualizar y renderizar según el estado
+        if (gameState === GAME_STATES.PLAYING) {
+          update(deltaTime);
+          render();
+        } else if (gameState === GAME_STATES.PAUSED) {
+          // En pausa solo renderizamos sin actualizar
+          render();
+        }
+
+        // Debug info (descomentar para ver FPS y estado)
+        // updateDebugInfo();
+
+        // Continuar el loop
+        animationId = requestAnimationFrame(gameLoop);
+      }
+
+      // Actualizar lógica del juego
+      function update(dt) {
+        // FASE 5: Actualizar wave complete
+        if (showingWaveComplete) {
+          updateWaveComplete(dt);
+          updateExplosions();
+          return; // No actualizar otras cosas durante wave complete
+        }
+
+        // FASE 2: Actualizar jugador y balas
+        updatePlayer(dt);
+        updatePlayerBullets(dt);
+
+        // FASE 3: Actualizar aliens y disparos enemigos
+        updateAliens(dt);
+        updateEnemyShooting(dt);
+
+        // FASE 5: Actualizar UFO
+        updateUFO(dt);
+        updateFloatingScores(dt);
+
+        // FASE 4: Detectar colisiones y actualizar efectos
+        checkPlayerBulletCollisions();
+        checkEnemyBulletCollisions();
+        checkUFOCollision();
+        checkShieldCollisions();
+        updateExplosions();
+      }
+
+      // Renderizar todos los elementos del juego
+      function render() {
+        // TODO: Renderizar en las siguientes fases:
+        // - Background stars (Fase 8)
+
+        // FASE 4: Renderizar escudos (primero, detrás de todo)
+        drawShields();
+
+        // FASE 3: Renderizar aliens y balas enemigas
+        drawAliens();
+        drawEnemyBullets();
+
+        // FASE 5: Renderizar UFO
+        drawUFO();
+
+        // FASE 2: Renderizar jugador y balas
+        drawPlayerBullets();
+        drawPlayer();
+
+        // FASE 4: Renderizar explosiones
+        drawExplosions();
+
+        // FASE 5: Renderizar puntuaciones flotantes y wave complete (encima de todo)
+        drawFloatingScores();
+        renderWaveComplete();
+      }
+
+      // Debug info (útil durante desarrollo)
+      function updateDebugInfo() {
+        debugInfo.style.display = "block";
+        debugInfo.innerHTML = `
+        FPS: ${fps}<br>
+        Estado: ${gameState}<br>
+        Score: ${score}<br>
+        Vidas: ${lives}<br>
+        Oleada: ${wave}<br>
+        Delta: ${deltaTime.toFixed(2)}ms
+      `;
+      }
+
+      /* ============================================
+       EVENT LISTENERS
+       ============================================ */
+
+      // Botón de inicio
+      startBtn.addEventListener("click", () => {
+        console.log("▶️ Iniciando juego...");
+        initAudio(); // Inicializar audio en primera interacción
+        initGame();
+        changeState(GAME_STATES.PLAYING);
+        startHeartbeat(); // Iniciar ritmo de fondo
+        gameLoop(0);
+      });
+
+      // Botón de pausa/reanudar
+      resumeBtn.addEventListener("click", () => {
+        changeState(GAME_STATES.PLAYING);
+        if (!heartbeatInterval) startHeartbeat();
+      });
+
+      // Botón de reiniciar desde pausa
+      restartFromPauseBtn.addEventListener("click", () => {
+        resetGame();
+        if (!heartbeatInterval) startHeartbeat();
+      });
+
+      // Botón de silenciar
+      muteBtn.addEventListener("click", () => {
+        isMuted = !isMuted;
+        muteBtn.textContent = isMuted ? "ACTIVAR SONIDO" : "SILENCIAR";
+        console.log(`🔊 Sonido: ${isMuted ? "OFF" : "ON"}`);
+      });
+
+      // Botón de jugar de nuevo
+      playAgainBtn.addEventListener("click", () => {
+        resetGame();
+        if (!heartbeatInterval) startHeartbeat();
+      });
+
+      // Botón de volver al menú
+      backToMenuBtn.addEventListener("click", () => {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+        }
+        stopHeartbeat();
+        changeState(GAME_STATES.START);
+      });
+
+      // Teclado - Pausa
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" || e.key.toLowerCase() === "p") {
+          if (gameState === GAME_STATES.PLAYING) {
+            changeState(GAME_STATES.PAUSED);
+            stopHeartbeat();
+          } else if (gameState === GAME_STATES.PAUSED) {
+            changeState(GAME_STATES.PLAYING);
+            if (!heartbeatInterval) startHeartbeat();
+          }
+        }
+
+        // Mute
+        if (e.key.toLowerCase() === "m") {
+          isMuted = !isMuted;
+          muteBtn.textContent = isMuted ? "ACTIVAR SONIDO" : "SILENCIAR";
+          console.log(`🔊 Sonido: ${isMuted ? "OFF" : "ON"}`);
+        }
+      });
+
+      // Nota: Los controles móviles ahora están implementados en la Fase 2 - Step 7 arriba
+
+      /* ============================================
+         PHASE 3 - STEP 8: ALIEN CREATION
+         ============================================ */
+
+      // Array de aliens
+      let aliens = [];
+
+      // Configuración de aliens
+      const ALIEN_CONFIG = {
+        typeA: { points: 30, color: "#ff0040", rows: [0] }, // Top row - squid
+        typeB: { points: 20, color: "#ff8c00", rows: [1] }, // Middle row - crab
+        typeC: { points: 10, color: "#ffed00", rows: [2] }, // Bottom row - octopus
+        cols: 8,
+        rows: 3,
+        width: 32,
+        height: 24,
+        spacing: 50,
+        startX: 150,
+        startY: 80,
+      };
+
+      // Clase Alien
+      class Alien {
+        constructor(x, y, type, row, col) {
+          this.x = x;
+          this.y = y;
+          this.type = type; // 'A', 'B', or 'C'
+          this.row = row;
+          this.col = col;
+          this.width = ALIEN_CONFIG.width;
+          this.height = ALIEN_CONFIG.height;
+          this.active = true;
+          this.animFrame = 0; // 0 or 1 for animation
+
+          // Configurar propiedades según tipo
+          if (type === "A") {
+            this.points = ALIEN_CONFIG.typeA.points;
+            this.color = ALIEN_CONFIG.typeA.color;
+          } else if (type === "B") {
+            this.points = ALIEN_CONFIG.typeB.points;
+            this.color = ALIEN_CONFIG.typeB.color;
+          } else {
+            this.points = ALIEN_CONFIG.typeC.points;
+            this.color = ALIEN_CONFIG.typeC.color;
+          }
+        }
+
+        draw() {
+          if (!this.active) return;
+
+          ctx.save();
+          ctx.fillStyle = this.color;
+
+          const centerX = this.x;
+          const centerY = this.y;
+
+          // Dibujar según el tipo de alien
+          if (this.type === "A") {
+            // Type A - Squid (forma más compleja)
+            this.drawSquidAlien(centerX, centerY);
+          } else if (this.type === "B") {
+            // Type B - Crab (forma mediana)
+            this.drawCrabAlien(centerX, centerY);
+          } else {
+            // Type C - Octopus (forma simple)
+            this.drawOctopusAlien(centerX, centerY);
+          }
+
+          ctx.restore();
+        }
+
+        drawSquidAlien(cx, cy) {
+          const offset = this.animFrame === 1 ? 2 : 0;
+
+          // Cuerpo superior
+          ctx.fillRect(cx - 12, cy - 8, 24, 10);
+
+          // Antenas
+          ctx.fillRect(cx - 14 + offset, cy - 12, 4, 4);
+          ctx.fillRect(cx + 10 - offset, cy - 12, 4, 4);
+
+          // Ojos
+          ctx.fillStyle = "#000";
+          ctx.fillRect(cx - 8, cy - 4, 4, 4);
+          ctx.fillRect(cx + 4, cy - 4, 4, 4);
+
+          // Tentáculos
+          ctx.fillStyle = this.color;
+          ctx.fillRect(cx - 12 + offset, cy + 4, 4, 6);
+          ctx.fillRect(cx - 4, cy + 4, 4, 6);
+          ctx.fillRect(cx + 4, cy + 4, 4, 6);
+          ctx.fillRect(cx + 12 - offset, cy + 4, 4, 6);
+        }
+
+        drawCrabAlien(cx, cy) {
+          const offset = this.animFrame === 1 ? 3 : 0;
+
+          // Pinzas
+          ctx.fillRect(cx - 16, cy - 4 + offset, 4, 8);
+          ctx.fillRect(cx + 12, cy - 4 + offset, 4, 8);
+
+          // Cuerpo
+          ctx.fillRect(cx - 10, cy - 6, 20, 12);
+
+          // Ojos
+          ctx.fillStyle = "#000";
+          ctx.fillRect(cx - 6, cy - 2, 3, 3);
+          ctx.fillRect(cx + 3, cy - 2, 3, 3);
+
+          // Patas
+          ctx.fillStyle = this.color;
+          ctx.fillRect(cx - 14, cy + 8, 3, 4);
+          ctx.fillRect(cx - 6, cy + 8, 3, 4);
+          ctx.fillRect(cx + 3, cy + 8, 3, 4);
+          ctx.fillRect(cx + 11, cy + 8, 3, 4);
+        }
+
+        drawOctopusAlien(cx, cy) {
+          const offset = this.animFrame === 1 ? 2 : -2;
+
+          // Cabeza
+          ctx.fillRect(cx - 10, cy - 8, 20, 12);
+
+          // Ojos
+          ctx.fillStyle = "#000";
+          ctx.fillRect(cx - 6, cy - 4, 4, 4);
+          ctx.fillRect(cx + 2, cy - 4, 4, 4);
+
+          // Brazos ondulantes
+          ctx.fillStyle = this.color;
+          ctx.fillRect(cx - 12, cy + 6 + offset, 3, 6);
+          ctx.fillRect(cx - 6, cy + 6 - offset, 3, 6);
+          ctx.fillRect(cx + 3, cy + 6 + offset, 3, 6);
+          ctx.fillRect(cx + 9, cy + 6 - offset, 3, 6);
+        }
+      }
+
+      // Crear formación de aliens
+      function createAlienFormation() {
+        aliens = [];
+
+        for (let row = 0; row < ALIEN_CONFIG.rows; row++) {
+          for (let col = 0; col < ALIEN_CONFIG.cols; col++) {
+            const x = ALIEN_CONFIG.startX + col * ALIEN_CONFIG.spacing;
+            const y = ALIEN_CONFIG.startY + row * ALIEN_CONFIG.spacing;
+
+            // Determinar tipo según la fila
+            let type;
+            if (row === 0) type = "A";
+            else if (row === 1) type = "B";
+            else type = "C";
+
+            const alien = new Alien(x, y, type, row, col);
+            aliens.push(alien);
+          }
+        }
+
+        console.log(`👾 ${aliens.length} aliens creados`);
+      }
+
+      // Contar aliens activos
+      function countActiveAliens() {
+        return aliens.filter((a) => a.active).length;
+      }
+
+      /* ============================================
+         PHASE 3 - STEP 9: ALIEN MOVEMENT
+         ============================================ */
+
+      // Variables de movimiento de aliens
+      let alienDirection = 1; // 1 = derecha, -1 = izquierda
+      let alienSpeed = 30; // píxeles por movimiento
+      let alienMoveTimer = 0;
+      let alienMoveInterval = 800; // milisegundos entre movimientos
+      let alienDropDistance = 20; // píxeles que bajan al cambiar dirección
+      let animationToggleTimer = 0;
+      const animationToggleInterval = 400; // Cambiar frame cada 400ms
+
+      // Actualizar aliens
+      function updateAliens(dt) {
+        if (aliens.length === 0) return;
+
+        // Timer para movimiento
+        alienMoveTimer += dt;
+        animationToggleTimer += dt;
+
+        // Toggle de animación
+        if (animationToggleTimer >= animationToggleInterval) {
+          animationToggleTimer = 0;
+          aliens.forEach((alien) => {
+            if (alien.active) {
+              alien.animFrame = alien.animFrame === 0 ? 1 : 0;
+            }
+          });
+        }
+
+        // Mover aliens
+        if (alienMoveTimer >= alienMoveInterval) {
+          alienMoveTimer = 0;
+          moveAliens();
+        }
+
+        // Ajustar velocidad según aliens restantes (más rápido con menos aliens)
+        const activeCount = countActiveAliens();
+        if (activeCount > 0) {
+          const speedMultiplier = 1 + (24 - activeCount) * 0.1; // 10% faster per alien
+          alienMoveInterval = Math.max(200, 800 / speedMultiplier);
+        }
+      }
+
+      // Mover toda la formación de aliens
+      function moveAliens() {
+        const activeAliens = aliens.filter((a) => a.active);
+        if (activeAliens.length === 0) return;
+
+        // Encontrar los bordes de la formación
+        let leftmost = Infinity;
+        let rightmost = -Infinity;
+
+        activeAliens.forEach((alien) => {
+          if (alien.x < leftmost) leftmost = alien.x;
+          if (alien.x > rightmost) rightmost = alien.x;
+        });
+
+        // Verificar si algún alien toca el borde
+        const hitLeftEdge = leftmost - ALIEN_CONFIG.width / 2 <= 20;
+        const hitRightEdge =
+          rightmost + ALIEN_CONFIG.width / 2 >= CANVAS_WIDTH - 20;
+
+        if (
+          (hitLeftEdge && alienDirection === -1) ||
+          (hitRightEdge && alienDirection === 1)
+        ) {
+          // Cambiar dirección y bajar
+          alienDirection *= -1;
+
+          activeAliens.forEach((alien) => {
+            alien.y += alienDropDistance;
+          });
+
+          // Verificar si los aliens llegaron al fondo (game over)
+          const lowestAlien = Math.max(...activeAliens.map((a) => a.y));
+          if (lowestAlien >= player.y - 40) {
+            console.log("💀 ¡Los aliens llegaron al suelo!");
+            lives = 0;
+            changeState(GAME_STATES.GAME_OVER);
+          }
+        } else {
+          // Mover horizontalmente
+          activeAliens.forEach((alien) => {
+            alien.x += alienSpeed * alienDirection;
+          });
+        }
+      }
+
+      // Dibujar todos los aliens
+      function drawAliens() {
+        aliens.forEach((alien) => {
+          if (alien.active) {
+            alien.draw();
+          }
+        });
+      }
+
+      /* ============================================
+         PHASE 3 - STEP 10: ALIEN SHOOTING
+         ============================================ */
+
+      // Array de balas enemigas
+      let enemyBullets = [];
+
+      // Clase de bala enemiga
+      class EnemyBullet {
+        constructor(x, y) {
+          this.x = x;
+          this.y = y;
+          this.width = 4;
+          this.height = 12;
+          this.speed = 200; // más lento que balas del jugador
+          this.color = "#ff0040";
+          this.active = true;
+          this.zigzagOffset = 0;
+          this.zigzagSpeed = 0.1;
+        }
+
+        update(dt) {
+          const deltaSeconds = dt / 1000;
+          this.y += this.speed * deltaSeconds;
+
+          // Efecto zigzag opcional
+          this.zigzagOffset += this.zigzagSpeed;
+          this.x += Math.sin(this.zigzagOffset) * 1.5;
+
+          // Desactivar si sale de la pantalla
+          if (this.y > CANVAS_HEIGHT) {
+            this.active = false;
+          }
+        }
+
+        draw() {
+          ctx.fillStyle = this.color;
+
+          // Forma de rayo/zigzag
+          ctx.fillRect(
+            this.x - this.width / 2,
+            this.y,
+            this.width,
+            this.height
+          );
+
+          // Líneas diagonales para efecto
+          ctx.fillRect(this.x - this.width, this.y + 4, this.width * 2, 2);
+        }
+      }
+
+      // Variables de disparo enemigo
+      let enemyShootTimer = 0;
+      let enemyShootInterval = 1500; // Intervalo base de disparo (ms)
+
+      // Actualizar disparos enemigos
+      function updateEnemyShooting(dt) {
+        enemyShootTimer += dt;
+
+        // Intentar disparar
+        if (enemyShootTimer >= enemyShootInterval) {
+          enemyShootTimer = 0;
+          shootFromRandomAlien();
+        }
+
+        // Actualizar balas enemigas
+        enemyBullets.forEach((bullet) => {
+          if (bullet.active) {
+            bullet.update(dt);
+          }
+        });
+
+        // Limpiar balas inactivas
+        enemyBullets = enemyBullets.filter((b) => b.active);
+      }
+
+      // Disparar desde un alien aleatorio de la fila inferior
+      function shootFromRandomAlien() {
+        const activeAliens = aliens.filter((a) => a.active);
+        if (activeAliens.length === 0) return;
+
+        // Encontrar aliens que están en la fila más baja de su columna
+        const bottomAliens = [];
+
+        for (let col = 0; col < ALIEN_CONFIG.cols; col++) {
+          const aliensInCol = activeAliens.filter((a) => a.col === col);
+          if (aliensInCol.length > 0) {
+            // Encontrar el más bajo (mayor Y)
+            const lowest = aliensInCol.reduce((prev, current) =>
+              current.y > prev.y ? current : prev
+            );
+            bottomAliens.push(lowest);
+          }
+        }
+
+        if (bottomAliens.length === 0) return;
+
+        // Elegir uno al azar
+        const shooter =
+          bottomAliens[Math.floor(Math.random() * bottomAliens.length)];
+
+        // Crear bala
+        const bullet = new EnemyBullet(
+          shooter.x,
+          shooter.y + ALIEN_CONFIG.height / 2
+        );
+        enemyBullets.push(bullet);
+      }
+
+      // Dibujar balas enemigas
+      function drawEnemyBullets() {
+        enemyBullets.forEach((bullet) => {
+          if (bullet.active) {
+            bullet.draw();
+          }
+        });
+      }
+
+      /* ============================================
+         PHASE 4 - STEP 11: COLLISION DETECTION
+         ============================================ */
+
+      // Función de colisión AABB (Axis-Aligned Bounding Box)
+      function checkCollision(obj1, obj2) {
+        return (
+          obj1.x - obj1.width / 2 < obj2.x + obj2.width / 2 &&
+          obj1.x + obj1.width / 2 > obj2.x - obj2.width / 2 &&
+          obj1.y - obj1.height / 2 < obj2.y + obj2.height / 2 &&
+          obj1.y + obj1.height / 2 > obj2.y - obj2.height / 2
+        );
+      }
+
+      // Detectar colisiones entre balas del jugador y aliens
+      function checkPlayerBulletCollisions() {
+        playerBullets.forEach((bullet) => {
+          if (!bullet.active) return;
+
+          aliens.forEach((alien) => {
+            if (!alien.active) return;
+
+            if (checkCollision(bullet, alien)) {
+              // Alien destruido
+              alien.active = false;
+              bullet.active = false;
+
+              // Agregar puntos
+              score += alien.points;
+              updateScoreDisplay();
+
+              // Crear explosión
+              createExplosion(alien.x, alien.y, alien.color);
+
+              // Sonido de explosión
+              soundAlienDestroyed();
+
+              // Verificar si todos los aliens fueron destruidos
+              if (countActiveAliens() === 0) {
+                console.log("🎉 ¡Oleada completa!");
+                wave++;
+                updateWaveDisplay();
+                // Mostrar pantalla de wave complete
+                showWaveComplete();
+                soundWaveComplete();
+              }
+            }
+          });
+        });
+      }
+
+      // Detectar colisiones entre balas enemigas y jugador
+      function checkEnemyBulletCollisions() {
+        if (!player.alive || player.invincible) return;
+
+        enemyBullets.forEach((bullet) => {
+          if (!bullet.active) return;
+
+          // Crear objeto temporal para colisión del jugador
+          const playerHitbox = {
+            x: player.x,
+            y: player.y + player.height / 2,
+            width: player.width,
+            height: player.height,
+          };
+
+          if (checkCollision(bullet, playerHitbox)) {
+            bullet.active = false;
+            playerHit();
+          }
+        });
+      }
+
+      // Jugador es golpeado
+      function playerHit() {
+        if (player.invincible || !player.alive) return;
+
+        lives--;
+        updateLivesDisplay();
+        console.log(`💔 Vida perdida! Vidas restantes: ${lives}`);
+
+        // Crear explosión del jugador
+        createExplosion(
+          player.x,
+          player.y + player.height / 2,
+          "#00ff41",
+          true
+        );
+
+        // Sonido de explosión del jugador
+        soundPlayerDestroyed();
+
+        if (lives <= 0) {
+          // Game Over
+          player.alive = false;
+          console.log("💀 Game Over!");
+          stopHeartbeat();
+          setTimeout(() => {
+            soundGameOver();
+            changeState(GAME_STATES.GAME_OVER);
+          }, 1500);
+        } else {
+          // Respawn con invencibilidad
+          player.alive = false;
+          setTimeout(() => {
+            resetPlayerPosition();
+          }, 1000);
+        }
+      }
+
+      // Detectar colisiones con escudos
+      function checkShieldCollisions() {
+        // Colisiones de balas del jugador con escudos
+        playerBullets.forEach((bullet) => {
+          if (!bullet.active) return;
+
+          shields.forEach((shield) => {
+            if (shield.checkCollision(bullet)) {
+              bullet.active = false;
+            }
+          });
+        });
+
+        // Colisiones de balas enemigas con escudos
+        enemyBullets.forEach((bullet) => {
+          if (!bullet.active) return;
+
+          shields.forEach((shield) => {
+            if (shield.checkCollision(bullet)) {
+              bullet.active = false;
+            }
+          });
+        });
+      }
+
+      /* ============================================
+         PHASE 4 - STEP 12: SHIELD IMPLEMENTATION
+         ============================================ */
+
+      let shields = [];
+
+      // Clase Shield
+      class Shield {
+        constructor(x, y) {
+          this.x = x;
+          this.y = y;
+          this.width = 80;
+          this.height = 60;
+          this.color = "#00ff41";
+
+          // Grid de integridad (pixelado)
+          this.gridWidth = 20;
+          this.gridHeight = 15;
+          this.pixelSize = 4;
+          this.integrity = [];
+
+          // Inicializar grid con forma de escudo
+          this.initShieldShape();
+        }
+
+        initShieldShape() {
+          // Crear forma clásica de bunker
+          const shape = [
+            "     111111111111111     ",
+            "   11111111111111111111  ",
+            "  1111111111111111111111 ",
+            " 111111111111111111111111",
+            "11111111111111111111111111",
+            "11111111111111111111111111",
+            "11111111111111111111111111",
+            "11111111111111111111111111",
+            "11111111111111111111111111",
+            "11111111111111111111111111",
+            "1111111      1111      111",
+            "111111        111       11",
+            "11111          11        1",
+            "1111           11         ",
+            "111            1          ",
+          ];
+
+          this.integrity = [];
+          for (let row = 0; row < this.gridHeight; row++) {
+            this.integrity[row] = [];
+            for (let col = 0; col < this.gridWidth; col++) {
+              if (col < shape[row].length && shape[row][col] === "1") {
+                this.integrity[row][col] = 1;
+              } else {
+                this.integrity[row][col] = 0;
+              }
+            }
+          }
+        }
+
+        draw() {
+          ctx.save();
+          ctx.fillStyle = this.color;
+
+          // Dibujar píxeles del escudo
+          for (let row = 0; row < this.gridHeight; row++) {
+            for (let col = 0; col < this.gridWidth; col++) {
+              if (this.integrity[row][col] > 0) {
+                const px =
+                  this.x +
+                  col * this.pixelSize -
+                  (this.gridWidth * this.pixelSize) / 2;
+                const py = this.y + row * this.pixelSize;
+
+                // Cambiar color según daño
+                if (this.integrity[row][col] === 1) {
+                  ctx.fillStyle = this.color;
+                } else if (this.integrity[row][col] === 0.5) {
+                  ctx.fillStyle = "#008020";
+                }
+
+                ctx.fillRect(px, py, this.pixelSize, this.pixelSize);
+              }
+            }
+          }
+
+          ctx.restore();
+        }
+
+        checkCollision(bullet) {
+          // Verificar si la bala está cerca del escudo
+          if (
+            bullet.x < this.x - this.width / 2 ||
+            bullet.x > this.x + this.width / 2 ||
+            bullet.y < this.y ||
+            bullet.y > this.y + this.height
+          ) {
+            return false;
+          }
+
+          // Convertir posición de bala a coordenadas de grid
+          const relX =
+            bullet.x - (this.x - (this.gridWidth * this.pixelSize) / 2);
+          const relY = bullet.y - this.y;
+
+          const gridX = Math.floor(relX / this.pixelSize);
+          const gridY = Math.floor(relY / this.pixelSize);
+
+          // Verificar límites
+          if (
+            gridX < 0 ||
+            gridX >= this.gridWidth ||
+            gridY < 0 ||
+            gridY >= this.gridHeight
+          ) {
+            return false;
+          }
+
+          // Si hay píxel en esa posición, dañar
+          if (this.integrity[gridY][gridX] > 0) {
+            this.damageArea(gridX, gridY, 2);
+            return true;
+          }
+
+          return false;
+        }
+
+        damageArea(centerX, centerY, radius) {
+          // Dañar área alrededor del impacto
+          for (let dy = -radius; dy <= radius; dy++) {
+            for (let dx = -radius; dx <= radius; dx++) {
+              const x = centerX + dx;
+              const y = centerY + dy;
+
+              if (
+                x >= 0 &&
+                x < this.gridWidth &&
+                y >= 0 &&
+                y < this.gridHeight
+              ) {
+                // Reducir integridad
+                if (this.integrity[y][x] > 0) {
+                  this.integrity[y][x] -= 0.5;
+                  if (this.integrity[y][x] <= 0) {
+                    this.integrity[y][x] = 0;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // Crear escudos
+      function createShields() {
+        shields = [];
+        const shieldY = CANVAS_HEIGHT - 180;
+        const spacing = CANVAS_WIDTH / 5;
+
+        for (let i = 0; i < 4; i++) {
+          const x = spacing * (i + 1);
+          shields.push(new Shield(x, shieldY));
+        }
+
+        console.log(`🛡️ ${shields.length} escudos creados`);
+      }
+
+      // Dibujar escudos
+      function drawShields() {
+        shields.forEach((shield) => shield.draw());
+      }
+
+      /* ============================================
+         PHASE 4 - STEP 13: EXPLOSION EFFECTS
+         ============================================ */
+
+      let explosions = [];
+
+      // Clase Explosion
+      class Explosion {
+        constructor(x, y, color, isPlayer = false) {
+          this.x = x;
+          this.y = y;
+          this.color = color;
+          this.isPlayer = isPlayer;
+          this.frame = 0;
+          this.maxFrames = isPlayer ? 20 : 12;
+          this.particles = [];
+          this.active = true;
+
+          // Crear partículas
+          const particleCount = isPlayer ? 15 : 8;
+          for (let i = 0; i < particleCount; i++) {
+            const angle = (Math.PI * 2 * i) / particleCount;
+            const speed = isPlayer
+              ? 2 + Math.random() * 3
+              : 1 + Math.random() * 2;
+            this.particles.push({
+              x: 0,
+              y: 0,
+              vx: Math.cos(angle) * speed,
+              vy: Math.sin(angle) * speed,
+              size: isPlayer ? 4 + Math.random() * 4 : 3 + Math.random() * 3,
+            });
+          }
+        }
+
+        update() {
+          this.frame++;
+
+          // Actualizar partículas
+          this.particles.forEach((p) => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.2; // Gravedad
+          });
+
+          if (this.frame >= this.maxFrames) {
+            this.active = false;
+          }
+        }
+
+        draw() {
+          ctx.save();
+
+          const alpha = 1 - this.frame / this.maxFrames;
+          ctx.globalAlpha = alpha;
+
+          // Dibujar flash central
+          if (this.frame < 5) {
+            ctx.fillStyle = "#ffffff";
+            const flashSize = (5 - this.frame) * 8;
+            ctx.fillRect(
+              this.x - flashSize / 2,
+              this.y - flashSize / 2,
+              flashSize,
+              flashSize
+            );
+          }
+
+          // Dibujar partículas
+          this.particles.forEach((p) => {
+            ctx.fillStyle = this.color;
+            ctx.fillRect(
+              this.x + p.x - p.size / 2,
+              this.y + p.y - p.size / 2,
+              p.size,
+              p.size
+            );
+          });
+
+          ctx.restore();
+        }
+      }
+
+      // Crear explosión
+      function createExplosion(x, y, color, isPlayer = false) {
+        explosions.push(new Explosion(x, y, color, isPlayer));
+      }
+
+      // Actualizar explosiones
+      function updateExplosions() {
+        explosions.forEach((exp) => {
+          if (exp.active) {
+            exp.update();
+          }
+        });
+
+        // Limpiar explosiones inactivas
+        explosions = explosions.filter((e) => e.active);
+      }
+
+      // Dibujar explosiones
+      function drawExplosions() {
+        explosions.forEach((exp) => {
+          if (exp.active) {
+            exp.draw();
+          }
+        });
+      }
+
+      /* ============================================
+         PHASE 5 - STEP 14: UFO/MYSTERY SHIP
+         ============================================ */
+
+      // Objeto UFO
+      const ufo = {
+        active: false,
+        x: 0,
+        y: 50,
+        width: 48,
+        height: 24,
+        speed: 100, // píxeles por segundo
+        direction: 1, // 1 = derecha, -1 = izquierda
+        points: 0, // Valor aleatorio cuando aparece
+        color: "#ff0040",
+      };
+
+      // Variables de spawn del UFO
+      let ufoSpawnTimer = 0;
+      let ufoSpawnInterval = 15000; // 15 segundos base
+      let ufoSoundPlaying = false;
+
+      // Dibujar UFO
+      function drawUFO() {
+        if (!ufo.active) return;
+
+        ctx.save();
+
+        const cx = ufo.x;
+        const cy = ufo.y;
+
+        // Cuerpo principal (disco volador)
+        ctx.fillStyle = ufo.color;
+
+        // Cúpula superior
+        ctx.fillRect(cx - 12, cy - 8, 24, 8);
+        ctx.fillRect(cx - 8, cy - 12, 16, 4);
+
+        // Base del platillo
+        ctx.fillRect(cx - 20, cy, 40, 8);
+        ctx.fillRect(cx - 16, cy + 8, 32, 4);
+
+        // Ventanas/luces
+        ctx.fillStyle = "#00fff7";
+        ctx.fillRect(cx - 12, cy - 6, 6, 4);
+        ctx.fillRect(cx + 6, cy - 6, 6, 4);
+
+        // Luces inferiores parpadeantes
+        if (Math.floor(Date.now() / 200) % 2 === 0) {
+          ctx.fillStyle = "#ffed00";
+          ctx.fillRect(cx - 14, cy + 6, 4, 4);
+          ctx.fillRect(cx - 4, cy + 6, 4, 4);
+          ctx.fillRect(cx + 10, cy + 6, 4, 4);
+        }
+
+        // Mostrar puntos si está cerca del jugador
+        if (Math.abs(ufo.x - CANVAS_WIDTH / 2) < 100) {
+          ctx.fillStyle = "#ffed00";
+          ctx.font = '12px "Courier New"';
+          ctx.textAlign = "center";
+          ctx.fillText(`${ufo.points}`, cx, cy - 20);
+        }
+
+        ctx.restore();
+      }
+
+      // Actualizar UFO
+      function updateUFO(dt) {
+        if (!ufo.active) {
+          // Timer para spawn
+          ufoSpawnTimer += dt;
+          if (ufoSpawnTimer >= ufoSpawnInterval) {
+            spawnUFO();
+            ufoSpawnTimer = 0;
+            // Randomizar próximo spawn (10-25 segundos)
+            ufoSpawnInterval = 10000 + Math.random() * 15000;
+          }
+          return;
+        }
+
+        // Mover UFO
+        const deltaSeconds = dt / 1000;
+        ufo.x += ufo.speed * ufo.direction * deltaSeconds;
+
+        // Desactivar si sale de la pantalla
+        if (ufo.direction === 1 && ufo.x > CANVAS_WIDTH + ufo.width) {
+          ufo.active = false;
+          ufoSoundPlaying = false;
+        } else if (ufo.direction === -1 && ufo.x < -ufo.width) {
+          ufo.active = false;
+          ufoSoundPlaying = false;
+        }
+      }
+
+      // Spawn UFO
+      function spawnUFO() {
+        if (ufo.active) return;
+        if (gameState !== GAME_STATES.PLAYING) return;
+
+        // Dirección aleatoria
+        ufo.direction = Math.random() > 0.5 ? 1 : -1;
+
+        // Posición inicial según dirección
+        if (ufo.direction === 1) {
+          ufo.x = -ufo.width;
+        } else {
+          ufo.x = CANVAS_WIDTH + ufo.width;
+        }
+
+        // Puntos aleatorios (50, 100, 150, 200, 250, 300)
+        const possiblePoints = [50, 100, 150, 200, 250, 300];
+        ufo.points =
+          possiblePoints[Math.floor(Math.random() * possiblePoints.length)];
+
+        ufo.active = true;
+        ufoSoundPlaying = true;
+
+        console.log(`🛸 UFO apareció! Vale ${ufo.points} puntos`);
+
+        // Sonido del UFO
+        soundUFOAppear();
+      }
+
+      // Colisión con UFO
+      function checkUFOCollision() {
+        if (!ufo.active) return;
+
+        playerBullets.forEach((bullet) => {
+          if (!bullet.active) return;
+
+          if (checkCollision(bullet, ufo)) {
+            // UFO destruido
+            ufo.active = false;
+            bullet.active = false;
+            ufoSoundPlaying = false;
+
+            // Agregar puntos bonus
+            score += ufo.points;
+            updateScoreDisplay();
+
+            // Crear explosión especial
+            createExplosion(ufo.x, ufo.y, "#ff0040", false);
+
+            // Mostrar puntos flotantes
+            createFloatingScore(ufo.x, ufo.y, ufo.points);
+
+            console.log(`🎯 ¡UFO destruido! +${ufo.points} puntos bonus!`);
+
+            // Sonido especial de UFO
+            soundUFODestroyed();
+          }
+        });
+      }
+
+      /* ============================================
+         PHASE 5 - STEP 15: SCORING & UI UPDATES
+         ============================================ */
+
+      // Array de puntuaciones flotantes
+      let floatingScores = [];
+
+      // Clase de puntuación flotante
+      class FloatingScore {
+        constructor(x, y, points) {
+          this.x = x;
+          this.y = y;
+          this.points = points;
+          this.alpha = 1;
+          this.lifetime = 0;
+          this.maxLifetime = 1500; // 1.5 segundos
+          this.active = true;
+        }
+
+        update(dt) {
+          this.lifetime += dt;
+          this.y -= 0.5; // Flotar hacia arriba
+          this.alpha = 1 - this.lifetime / this.maxLifetime;
+
+          if (this.lifetime >= this.maxLifetime) {
+            this.active = false;
+          }
+        }
+
+        draw() {
+          ctx.save();
+          ctx.globalAlpha = this.alpha;
+          ctx.fillStyle = "#ffed00";
+          ctx.font = 'bold 20px "Courier New"';
+          ctx.textAlign = "center";
+          ctx.strokeStyle = "#000";
+          ctx.lineWidth = 3;
+          ctx.strokeText(`+${this.points}`, this.x, this.y);
+          ctx.fillText(`+${this.points}`, this.x, this.y);
+          ctx.restore();
+        }
+      }
+
+      // Crear puntuación flotante
+      function createFloatingScore(x, y, points) {
+        floatingScores.push(new FloatingScore(x, y, points));
+      }
+
+      // Actualizar puntuaciones flotantes
+      function updateFloatingScores(dt) {
+        floatingScores.forEach((fs) => {
+          if (fs.active) {
+            fs.update(dt);
+          }
+        });
+
+        // Limpiar inactivos
+        floatingScores = floatingScores.filter((fs) => fs.active);
+      }
+
+      // Dibujar puntuaciones flotantes
+      function drawFloatingScores() {
+        floatingScores.forEach((fs) => {
+          if (fs.active) {
+            fs.draw();
+          }
+        });
+      }
+
+      /* ============================================
+         PHASE 5 - STEP 16: WAVE MANAGEMENT
+         ============================================ */
+
+      // Variable para pantalla de wave complete
+      let showingWaveComplete = false;
+      let waveCompleteTimer = 0;
+
+      // Mostrar pantalla de wave complete
+      function showWaveComplete() {
+        showingWaveComplete = true;
+        waveCompleteTimer = 0;
+      }
+
+      // Actualizar wave complete
+      function updateWaveComplete(dt) {
+        if (!showingWaveComplete) return;
+
+        waveCompleteTimer += dt;
+
+        // Después de 2 segundos, spawnar nueva oleada
+        if (waveCompleteTimer >= 2000) {
+          showingWaveComplete = false;
+          createAlienFormation();
+          // Aumentar dificultad
+          alienMoveInterval = Math.max(400, alienMoveInterval * 0.75);
+          enemyShootInterval = Math.max(800, enemyShootInterval * 0.75);
+          // Más probable que aparezca UFO en oleadas avanzadas
+          ufoSpawnInterval = Math.max(8000, 15000 - wave * 1000);
+        }
+      }
+
+      // Renderizar pantalla de wave complete
+      function renderWaveComplete() {
+        if (!showingWaveComplete) return;
+
+        ctx.save();
+
+        // Fondo semi-transparente
+        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+        // Efecto de parpadeo
+        const blink = Math.floor(waveCompleteTimer / 200) % 2;
+        if (blink === 0) {
+          ctx.fillStyle = "#00fff7";
+        } else {
+          ctx.fillStyle = "#00ff41";
+        }
+
+        // Texto principal
+        ctx.font = 'bold 48px "Courier New"';
+        ctx.textAlign = "center";
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 4;
+
+        const text = `¡OLEADA ${wave - 1} COMPLETA!`;
+        ctx.strokeText(text, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 40);
+        ctx.fillText(text, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 40);
+
+        // Subtexto
+        ctx.fillStyle = "#ffed00";
+        ctx.font = '24px "Courier New"';
+        ctx.fillText(
+          `Preparándose oleada ${wave}...`,
+          CANVAS_WIDTH / 2,
+          CANVAS_HEIGHT / 2 + 20
+        );
+
+        // Mostrar bonificación si la completaste rápido
+        const timeTaken = Math.floor(waveCompleteTimer / 1000);
+        if (timeTaken < 30) {
+          ctx.fillStyle = "#ff0040";
+          ctx.font = '20px "Courier New"';
+          ctx.fillText(
+            "¡BONUS DE VELOCIDAD!",
+            CANVAS_WIDTH / 2,
+            CANVAS_HEIGHT / 2 + 60
+          );
+        }
+
+        ctx.restore();
+      }
+
+      /* ============================================
+         PHASE 6 - STEP 17: WEB AUDIO API SETUP
+         ============================================ */
+
+      // Crear AudioContext
+      let audioContext = null;
+      let isMuted = false;
+
+      // Inicializar AudioContext (debe hacerse después de interacción del usuario)
+      function initAudio() {
+        if (!audioContext) {
+          try {
+            audioContext = new (window.AudioContext ||
+              window.webkitAudioContext)();
+            console.log("🔊 Sistema de audio inicializado");
+          } catch (e) {
+            console.warn("Audio no soportado:", e);
+          }
+        }
+      }
+
+      // Función para generar tonos
+      function playTone(frequency, duration, type = "square", volume = 0.3) {
+        if (isMuted || !audioContext) return;
+
+        try {
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+
+          oscillator.type = type;
+          oscillator.frequency.setValueAtTime(
+            frequency,
+            audioContext.currentTime
+          );
+
+          gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(
+            0.01,
+            audioContext.currentTime + duration
+          );
+
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + duration);
+        } catch (e) {
+          console.warn("Error reproduciendo tono:", e);
+        }
+      }
+
+      // Función para tonos complejos (múltiples frecuencias)
+      function playChord(frequencies, duration, type = "square", volume = 0.2) {
+        frequencies.forEach((freq) => {
+          playTone(freq, duration, type, volume);
+        });
+      }
+
+      /* ============================================
+         PHASE 6 - STEP 18: SOUND EFFECTS
+         ============================================ */
+
+      // Sonido de disparo del jugador
+      function soundPlayerShoot() {
+        if (isMuted || !audioContext) return;
+
+        // Láser rápido ascendente
+        playTone(800, 0.05, "square", 0.15);
+        setTimeout(() => playTone(1000, 0.05, "square", 0.1), 20);
+      }
+
+      // Sonido de alien destruido
+      function soundAlienDestroyed() {
+        if (isMuted || !audioContext) return;
+
+        // Explosión descendente
+        playTone(400, 0.1, "sawtooth", 0.3);
+        setTimeout(() => playTone(200, 0.1, "sawtooth", 0.2), 50);
+        setTimeout(() => playTone(100, 0.15, "sawtooth", 0.15), 100);
+      }
+
+      // Sonido de jugador destruido
+      function soundPlayerDestroyed() {
+        if (isMuted || !audioContext) return;
+
+        // Explosión grande con reverb
+        playTone(600, 0.2, "sawtooth", 0.4);
+        setTimeout(() => playTone(400, 0.2, "sawtooth", 0.35), 50);
+        setTimeout(() => playTone(250, 0.25, "sawtooth", 0.3), 100);
+        setTimeout(() => playTone(150, 0.3, "sawtooth", 0.25), 150);
+        setTimeout(() => playTone(80, 0.35, "sawtooth", 0.2), 200);
+      }
+
+      // Sonido de UFO (wobbling continuous)
+      function soundUFOAppear() {
+        if (isMuted || !audioContext) return;
+
+        // Tono oscilante característico
+        playTone(400, 0.2, "sine", 0.2);
+        setTimeout(() => playTone(450, 0.2, "sine", 0.2), 100);
+        setTimeout(() => playTone(400, 0.2, "sine", 0.2), 200);
+      }
+
+      // Sonido de UFO destruido
+      function soundUFODestroyed() {
+        if (isMuted || !audioContext) return;
+
+        // Sonido especial de bonus
+        playChord([800, 1000, 1200], 0.15, "sine", 0.25);
+        setTimeout(() => playChord([900, 1100, 1300], 0.15, "sine", 0.2), 75);
+      }
+
+      // Sonido de oleada completa
+      function soundWaveComplete() {
+        if (isMuted || !audioContext) return;
+
+        // Fanfarria ascendente
+        const notes = [262, 330, 392, 523]; // C, E, G, C (acorde de Do mayor)
+        notes.forEach((note, i) => {
+          setTimeout(() => playTone(note, 0.2, "sine", 0.25), i * 150);
+        });
+      }
+
+      // Sonido de game over
+      function soundGameOver() {
+        if (isMuted || !audioContext) return;
+
+        // Secuencia descendente triste
+        const notes = [392, 349, 330, 294, 262]; // G, F, E, D, C (descendente)
+        notes.forEach((note, i) => {
+          setTimeout(() => playTone(note, 0.3, "triangle", 0.3), i * 200);
+        });
+      }
+
+      // Sonido del heartbeat (fondo)
+      let heartbeatInterval = null;
+      let heartbeatSpeed = 600;
+      let currentBeat = 0;
+
+      function startHeartbeat() {
+        if (heartbeatInterval) return;
+
+        heartbeatInterval = setInterval(() => {
+          if (gameState !== GAME_STATES.PLAYING || isMuted || !audioContext)
+            return;
+
+          // Cuatro notas diferentes (dum-dum-dum-dum)
+          const beats = [180, 160, 140, 120];
+          playTone(beats[currentBeat % 4], 0.1, "square", 0.15);
+          currentBeat++;
+
+          // Ajustar velocidad según posición de aliens
+          const activeAliens = aliens.filter((a) => a.active);
+          if (activeAliens.length > 0) {
+            const lowestY = Math.max(...activeAliens.map((a) => a.y));
+            const distanceRatio = lowestY / (CANVAS_HEIGHT - 100);
+            heartbeatSpeed = Math.max(200, 600 - distanceRatio * 400);
+
+            // Actualizar intervalo
+            if (heartbeatInterval) {
+              clearInterval(heartbeatInterval);
+              heartbeatInterval = null;
+              startHeartbeat();
+            }
+          }
+        }, heartbeatSpeed);
+      }
+
+      function stopHeartbeat() {
+        if (heartbeatInterval) {
+          clearInterval(heartbeatInterval);
+          heartbeatInterval = null;
+          currentBeat = 0;
+          heartbeatSpeed = 600;
+        }
+      }
+
+      /* ============================================
+         INICIALIZACIÓN
+         ============================================ */
+
+      // Cargar high score al iniciar
+      loadHighScore();
+
+      // Mostrar pantalla de inicio
+      changeState(GAME_STATES.START);
+
+      console.log("🚀 Invasores Espaciales - Fase 6 Completada");
+      console.log("✅ Fase 1: UI, Estados, Canvas, Game loop");
+      console.log("✅ Fase 2: Jugador, Controles, Disparos");
+      console.log("✅ Fase 3: Aliens, Movimiento, Disparos enemigos");
+      console.log("✅ Fase 4: Colisiones, Escudos, Explosiones");
+      console.log("✅ Fase 5: UFO bonus, Oleadas, Puntuaciones");
+      console.log("✅ Fase 6: Sistema de audio completo");
+      console.log("🔊 Efectos de sonido, música de fondo");
+      console.log("🎮 ¡Juego totalmente completo!");
+      console.log("📝 Opcional: Fases 7-9 (pulido visual)");
+    </script>
+  </body>
+</html>
